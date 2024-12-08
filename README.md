@@ -12,26 +12,26 @@ I don't know anything about it and how behave a malicious traffic. My goal, with
 
 The first issue you have when you process such dataset is semantic. When you want to make graph with one dataset it is easy because you take headers and make your plots. But when you have two datasets, it often happens that two different looking headers means the same thing. For example : **bwd_iat.avg** and **Bwd_IAT_Mean**. More that simple syntax issue such as uppercase or underscore, mean and average are synonim and avg is the abbreviation of average. How can I efficiently detect that those headers are actually the same ?
 
-The process I imagined is the following:
-1- clean the header : 
+The process I imagined is the following: <br/>
+**1- clean the header :** 
     bwd_iat.avg become  ["bwd", "iat", "avg"]
     Bwd_IAT_Mean become ["bwd", "iat", "mean"]
 
-2- apply filters :
-    2.1 Synonim filter :
+**2- apply filters :** <br/>
+    **2.1 Synonim filter :**
     Use a reverse mapping dictionnary : {"mean": "average", "avg": "average","median": "average" ...} 
     So you fix the word you want in O(1) time.
 
     ["bwd", "iat", "avg"] become  ["bwd", "iat", "average"]
     ["bwd", "iat", "mean"] become ["bwd", "iat", "average"]
 
-    2.2 Grammar filter :
+   ** 2.2 Grammar filter :**
     Words like flags and flag can cause confusion. Those details can be omitted for better recognition.
 
 Now you can find out easily that those headers are the same !
 
-But could it be more difficult ? Like in this case : flow_SYN_flag_count and SYN_Flag_Count. Lets try the algorithm.
-1- clean the header :
+But could it be more difficult ? Like in this case : flow_SYN_flag_count and SYN_Flag_Count. Lets try the algorithm. <br/>
+**1- clean the header :** <br/>
     fwd_PSH_flag_count become ["flow", "syn", "flag", "count"]
     PSH_Flag_Count become ["syn", "flag", "count"]
 
