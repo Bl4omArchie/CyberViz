@@ -12,7 +12,7 @@ class Dataset:
        
         self.content = self.read_content()
         self.lexique = {
-            "average": ["mean", "avg", "median", "average"],
+            "average": ["mean", "avg", "median"],
             "total": ["sum", "tot", "total"],
             "minimum": ["min", "minimum"],
             "maximum": ["max", "maximum"],
@@ -32,18 +32,17 @@ class Dataset:
             "header": ["hdr", "header"],
             "length": ["len", "length"],
             "duration": ["time", "duration"],
-            "category": ["class", "type", "label"],
-            "label": ["category", "label"]
+            "category": ["class", "type", "traffic_category"]
         }
         
     def read_content(self):
         if self.filetype == "csv":
-            if os.path.exists(f"feather/{self.filename}.feather"):
-                return pd.read_feather(f"feather/{self.filename}.feather")
-            else:
-                df = pd.read_csv(self.filepath, low_memory=False)
-                df.to_feather(f"feather/{self.filename}.feather")
-                return df
+            if not os.path.exists(f"feather/{self.filename}.feather"):
+                for i, chunk in enumerate(pd.read_csv(self.filepath, low_memory=False, chunksize=500000)):
+                    chunk.to_feather(f"feather/{self.filename}_part{i}.feather")
+            
+            return 0
+
         
         elif self.filetype == "xlsx":
             return pd.read_excel(self.filepath, sheet_name=self.sheetname)

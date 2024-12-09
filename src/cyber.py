@@ -1,7 +1,7 @@
 from src.files import *
 import spacy
 
-class CyberDataset:
+class CyberViz:
     def __init__(self, dataset: list):
         # collection of dataset
         self.cdata = dataset

@@ -7,10 +7,41 @@ This was very pleasant and now I want to develop the idea further with a full py
 I started wondering about malicious traffic from the day I installed Snort. At the moment, I asked myself : how can i write relevant rules to detect malicious traffic ?
 I don't know anything about it and how behave a malicious traffic. My goal, with this project, is to learn about all type of attack, pcap files, malicious patterns and network security.
 
+**Pre-requisite** : the dataset the program handle are very large (dozen of GB). I'm doing my best to make this program scalable and optimized. 
+My computer specs:
+- CPU : i5 10th
+- RAM : 16 Go
+
+laptop :
+- CPU : i3 10th
+- RAM : 8 Go
+
 
 # Algorithms
 
-The first issue you have when you process such dataset is semantic. When you want to make graph with one dataset it is easy because you take headers and make your plots. But when you have two datasets, it often happens that two different looking headers means the same thing. For example : **bwd_iat.avg** and **Bwd_IAT_Mean**. More that simple syntax issue such as uppercase or underscore, mean and average are synonim and avg is the abbreviation of average. How can I efficiently detect that those headers are actually the same ?
+
+## Opening large dataset
+
+For my project, I need several and large dataset. Some of them are only one or two GB but other are more than 7GB which is a lot to process in memory. In this section, I'm documenting the techniques I used to open those files easily.
+
+### Opening a file
+
+First of all, you have a limit of how much data you can load in a Dataframe (with pandas). When you make computation, your values go through your RAM and this limit depends on how much RAM you have. For a dataset of a few GB, you can open it with no difficulties like this :
+```py
+example
+``` 
+
+
+### Opening a file several timem
+- use feather
+
+
+### Further optimization - only for larger computer
+- parallesization with Dask
+
+## Headers semantic
+
+The second issue you have when you process such dataset is semantic. When you want to make graph with one dataset it is easy because you take headers and make your plots. But when you have two datasets, it often happens that two different looking headers means the same thing. For example : **bwd_iat.avg** and **Bwd_IAT_Mean**. More that simple syntax issue such as uppercase or underscore, mean and average are synonim and avg is the abbreviation of average. How can I efficiently detect that those headers are actually the same ?
 
 The process I imagined is the following: <br/>
 **1- clean the header :** 
@@ -48,6 +79,7 @@ TODO
 ## Dataset :
 - [Hikari2021](https://zenodo.org/records/6463389)
 - [ISOT](https://onlineacademiccommunity.uvic.ca/isot/datasets/)
+- [University of Queenland - NIDS dataset](https://staff.itee.uq.edu.au/marius/NIDS_datasets/)
 
 ## Python :
 - [Pandas - data structure](https://pandas.pydata.org/pandas-docs/stable/index.html)
