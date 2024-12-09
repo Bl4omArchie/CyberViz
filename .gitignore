@@ -1,4 +1,5 @@
-dataviz/
+viz/
 datasets/
+feather/
 docs/
 __pycache__/
