@@ -84,6 +84,7 @@ TODO
 ## Python :
 - [Pandas - data structure](https://pandas.pydata.org/pandas-docs/stable/index.html)
 - [Feather - portable file format for storing Arrow tables or data frames](https://arrow.apache.org/docs/python/feather.html)
+- [Dask - library for parallel and distributed computing](https://docs.dask.org/)
 
 ## Dataviz :
 - [DatavizProject](https://datavizproject.com/)
