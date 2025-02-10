@@ -1,5 +1,4 @@
-pandas
+dask
 pyarrow
-feather-format
-spacy
-levenshtein
+pandas
+seaborn

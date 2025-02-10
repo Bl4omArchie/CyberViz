@@ -1,5 +1,4 @@
-viz/
-datasets/
-feather/
-docs/
 __pycache__/
+cyberviz_env/
+data/
+datalake/
