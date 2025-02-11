@@ -1,22 +1,29 @@
+from cyberviz.interpreter.tokenizer import *
 from cyberviz.convert import export
 from cyberviz.plot import analyze
 from pathlib import Path
+
 import dask.dataframe as dd
 import h5py
-
 import hashlib
+import pandas as pd
 
 
 
 class Dataset:
-    def __init__(self, path: str):  
+    def __init__(self, path: str, activity: bool=False):
         self.dsid = self.compute_hash_dataset(path)
-        self.dataframe = None
+        self.data = None
         self.path_dataset = Path(path)
-        self.hash_dataset = self.dsid
         self.format_dataset = None
         self.extension_dataset = None
-        
+        self.status = activity
+
+    # Hash the files as the dataset id (dsid)
+    # 
+    # Parameter :
+    #   path : path to your dataset
+    #
     def compute_hash_dataset(self, path: str) -> str:
         sha256_hash = hashlib.sha256()
         with open(path, "rb") as f:
@@ -25,8 +32,25 @@ class Dataset:
         
         return sha256_hash.hexdigest()
     
+    # Compare the hash of two dataset
+    #
+    # Return :
+    #   boolean : true or false
     def compare(self, dataset: object) -> bool:
-        return self.hash_dataset == self.compute_hash_dataset(dataset.path)
+        return self.dsid == self.compute_hash_dataset(dataset.path)
+
+    # When the dataset is active, data is loaded into memory
+    def activate(self):
+        self.status = true
+        self.open_dataset()
+
+    # Free the memory
+    def stop(self):
+        self.status = false
+        self.data = None
+
+    def get(self):
+        return self
 
 
 class CsvDataset(Dataset):
@@ -42,15 +66,57 @@ class CsvDataset(Dataset):
         if not self.path_dataset.is_file():
             raise ValueError("[!] Invalid path")
         
+    
+    # Load the dataset into memory with data var
+    #
+    # Parameters :
+    #   chunksize : split the csv into multiple file so you don't open it all
+    #   usecols : specificy columns from your dataset
+    #   sep : define the separator
+    #   encoding : UTF-8 by default
+    #
     def open_dataset(self, chunksize=None, usecols=None, sep=None, encoding="UTF-8"):
         if chunksize:
-            self.dataframe = dd.read_csv(self.path_dataset, chunksize=chunksize, usecols=usecols, sep=sep, encoding=encoding)
-            for chunk in self.dataframe:
-                pass
+            self.data = dd.read_csv(self.path_dataset, chunksize=chunksize, usecols=usecols, sep=sep, encoding=encoding)
+            self.data = self.data[0]
         else:
-            self.dataframe = dd.read_csv(self.path_dataset, usecols=usecols, sep=sep, encoding=encoding)
-            pass
+            self.data = dd.read_csv(self.path_dataset, usecols=usecols, sep=sep, encoding=encoding)
+
+
+    # Correlate columns from different csv
+    #
+    # Parameters:
+    #   lexicon_path : a lexicon is a json with several words for one translation
+    #   dataset : another csv so you can merge them
+    #
+    # Warnings:
+    #   Merging two csv is relevant only if both csv means the same thing. 
+    #   If both have similar columns but different meaning, your work on them will not be relevant 
+    def merge_csv(self, lexicon_path: str, dataset: object):
+        if self.data is None:
+            self.open_dataset()
         
+        if dataset.data is None:
+            dataset.open_dataset()
+
+        lex = get_lexicon(lexicon_path)
+
+        columns1 = self.get_columns()
+        columns2 = dataset.get_columns()
+        
+        th1 = tokenize_headers(columns1)
+        th2 = tokenize_headers(columns2)
+
+        print (th1, th2)
+
+
+    def get_columns(self):
+        if self.data is not None:
+            return self.data.columns.tolist()
+        else:
+            raise ValueError("[!] Dataset is not loaded. Please open the dataset first.")
+
+
     def basics_data(self):
         print (analyze.analyze_csv(self))
         
@@ -86,7 +152,7 @@ class ParquetDataset(Dataset):
         return sha256_hash.hexdigest()
 
     def open_dataset(self):
-        self.dataframe = dd.read_parquet(self.file_cursor, 'r')
+        self.data = dd.read_parquet(self.file_cursor, 'r')
         
 
 class Hdf5Dataset(Dataset):
@@ -103,4 +169,4 @@ class Hdf5Dataset(Dataset):
             raise ValueError("[!] Invalid path")
         
     def open_dataset(self):
-        self.dataframe = h5py.File(self.path_dataset, 'r')
+        self.data = h5py.File(self.path_dataset, 'r')

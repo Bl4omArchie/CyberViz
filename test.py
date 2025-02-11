@@ -7,4 +7,4 @@ if __name__ == "__main__":
     dsid1 = cz.add_dataset("data/hiraki2021.csv")
     dsid2 = cz.add_dataset("data/cic-bot-iot.csv")
 
-    print (type(cz.get_hash(dsid1)))
+    print (dsid1.merge_csv("cyberviz/interpreter/lexicon.json", dsid2.get()))
