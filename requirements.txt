@@ -2,3 +2,4 @@ dask
 pyarrow
 pandas
 seaborn
+h5py

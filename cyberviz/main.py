@@ -1,5 +1,5 @@
-from cyberviz.dataset import *
-from cyberviz.export import *
+from cyberviz.convert.export import export_to_parquet
+from cyberviz.dataset import CsvDataset, PcapDataset, ParquetDataset, Hdf5Dataset
 
 import dask.dataframe as dd
 import random
@@ -9,7 +9,7 @@ import os
 class Cyberviz:
     """
     Cyberviz is a class that takes datasets and performs operations like compression, statistics, and more.
-    Currently, only CSV, PCAP, and Parquet files are accepted.
+    Currently, only CSV, PCAP, HD5 and Parquet files are accepted.
     """
     
     def __init__(self):        
@@ -17,16 +17,8 @@ class Cyberviz:
         # Usage: {id1: data_object1, id2: data_object2, ...}
         self.loaded_datasets = {}
         
-        #Set of unique ids
-        self.liste_id = set()
-        
-        
-    # Generate an unique Datset ID (dsid)
-    def generate_id(self):
-        unique_id = 0x1
-        while unique_id in self.liste_id:
-            unique_id = random.randint(0, 0x1337)
-        return unique_id
+        # Set of unique ids
+        self.loaded_ids = set()
       
         
     # Add a dataset to the loaded_datasets dictionary
@@ -35,31 +27,35 @@ class Cyberviz:
     #
     # Return :
     #   dsid: the unique id of the dataset
-    def add_dataset(self, path: str):
-        dsid = self.generate_id()
+    def add_dataset(self, path: str) -> str:
         if path.endswith(".csv"): 
-            obj = CsvDataset(dsid, path)
+            obj = CsvDataset(path)
         
         elif path.endswith(".pcap"): 
-            obj = PcapDataset(dsid, path)
+            obj = PcapDataset(path)
             
         elif path.endswith((".parquet", ".pq", ".parq")): 
-            obj = ParquetDataset(dsid, path)
+            obj = ParquetDataset(path)
+        
+        elif path.endswith(".h5"):
+            obj = Hdf5Dataset(path)
             
         else:
-            raise ValueError("[!] Invalid dataset format. Accepted formats: CSV, PCAP, Parquet") 
-        
-        self.liste_id.add(dsid)
+            raise ValueError("[!] Invalid dataset format. Accepted formats: CSV, PCAP, Parquet, HDF5") 
+
+        if obj.dsid in self.loaded_ids:
+            raise ValueError("[!] This dataset has already been loaded")
+        self.loaded_ids.add(obj.dsid)
         self.loaded_datasets[obj.dsid] = obj
         
-        return dsid
+        return obj.dsid
         
 
     # Make basic analysis of the dataset
     # Parameter :
     #   dsid: dataset id
     # 
-    def analyze(self, dsid: int):
+    def analyze(self, dsid: str):
         self.loaded_datasets.get(dsid).open(chunksize=10, sep=",")
 
 
@@ -67,7 +63,7 @@ class Cyberviz:
     # Parameter :   
     #   dsid: dataset id
     #   export_path: folder where your file will be converted
-    def export_to_parquet(self, dsid: int, export_path: str):
+    def export_to_parquet(self, dsid: str, export_path: str):
         data = self.loaded_datasets.get(dsid)
         if data is None:
             raise ValueError("[!] Dataset not found")
@@ -85,5 +81,19 @@ class Cyberviz:
     # A json file keep track of each file to get them back to their original format
     # The purpose of the datalake is to store efficiently data for other purpose like data visualization or AI 
     def create_datalake(self):
-        for val, key in self.loaded_datasets:
-            print (val, key)
+        for key, val in self.loaded_datasets.items():
+            print(key, val)
+
+
+    # Get the hash of the dataset
+    # Parameter :   
+    #   dsid: dataset id
+    # 
+    # Return :
+    #   hash of the dataset
+    def get_hash(self, dsid: str) -> str:
+        data = self.loaded_datasets.get(dsid)
+        if data is None:
+            raise ValueError("[!] Dataset not found")
+        
+        return data.hash_dataset
