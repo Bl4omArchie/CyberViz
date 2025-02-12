@@ -88,15 +88,6 @@ class Cyberviz:
             
         except Exception as e:
             print(f"[!] Failed to export dataset to parquet: {e}")
-        
-    
-    # Take every loaded dataset and store them into a create_datalake
-    # A datalake is defined as a single folder where only parquet file are stored
-    # A json file keep track of each file to get them back to their original format
-    # The purpose of the datalake is to store efficiently data for other purpose like data visualization or AI 
-    def create_datalake(self):
-        for key, val in self.datasets.items():
-            print(key, val)
 
 
     # Get the hash of the dataset
@@ -111,3 +102,12 @@ class Cyberviz:
             raise ValueError("[!] Dataset not found")
         
         return data.hash_dataset
+
+    
+    # Take every loaded dataset and store them into a create_datalake
+    # A datalake is defined as a single folder where only parquet file are stored
+    # A json file keep track of each file to get them back to their original format
+    # The purpose of the datalake is to store efficiently data for other purpose like data visualization or AI 
+    def create_datalake(self):
+        for key, val in self.datasets.items():
+            print(key, val)

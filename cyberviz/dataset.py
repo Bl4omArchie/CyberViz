@@ -4,20 +4,22 @@ from cyberviz.plot import analyze
 from pathlib import Path
 
 import dask.dataframe as dd
-import h5py
-import hashlib
 import pandas as pd
+import hashlib
+import h5py
+
 
 
 
 class Dataset:
-    def __init__(self, path: str, activity: bool=False):
+    def __init__(self, path: str):
         self.dsid = self.compute_hash_dataset(path)
         self.data = None
         self.path_dataset = Path(path)
         self.format_dataset = None
         self.extension_dataset = None
-        self.status = activity
+        self.activity = False
+
 
     # Hash the files as the dataset id (dsid)
     # 
@@ -38,11 +40,6 @@ class Dataset:
     #   boolean : true or false
     def compare(self, dataset: object) -> bool:
         return self.dsid == self.compute_hash_dataset(dataset.path)
-
-    # When the dataset is active, data is loaded into memory
-    def activate(self):
-        self.status = true
-        self.open_dataset()
 
     # Free the memory
     def stop(self):
@@ -65,6 +62,12 @@ class CsvDataset(Dataset):
 
         if not self.path_dataset.is_file():
             raise ValueError("[!] Invalid path")
+
+
+    # When the dataset is active, data is loaded into memory
+    def activate(self, chunksize=None, usecols=None, sep=None, encoding="UTF-8"):
+        self.status = True
+        self.open_dataset(chunksize, usecols, sep, encoding)
         
     
     # Load the dataset into memory with data var
@@ -93,11 +96,8 @@ class CsvDataset(Dataset):
     #   Merging two csv is relevant only if both csv means the same thing. 
     #   If both have similar columns but different meaning, your work on them will not be relevant 
     def merge_csv(self, lexicon_path: str, dataset: object):
-        if self.data is None:
-            self.open_dataset()
-        
-        if dataset.data is None:
-            dataset.open_dataset()
+        if self.status == False | dataset.status == False:
+            raise ValueError("[!] Dataset are inactive. Please activate them first.")
 
         lex = get_lexicon(lexicon_path)
 
@@ -107,18 +107,18 @@ class CsvDataset(Dataset):
         th1 = tokenize_headers(columns1)
         th2 = tokenize_headers(columns2)
 
-        print (th1, th2)
+        print (lex)
 
 
     def get_columns(self):
-        if self.data is not None:
+        if self.status:
             return self.data.columns.tolist()
         else:
-            raise ValueError("[!] Dataset is not loaded. Please open the dataset first.")
+            raise ValueError("[!] Dataset is inactive. Please activate the dataset first.")
 
 
     def basics_data(self):
-        print (analyze.analyze_csv(self))
+        pass
         
      
 class PcapDataset(Dataset):
