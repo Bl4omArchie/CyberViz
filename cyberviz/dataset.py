@@ -18,7 +18,7 @@ class Dataset:
         self.path_dataset = Path(path)
         self.format_dataset = None
         self.extension_dataset = None
-        self.activity = False
+        self.status = False
 
 
     # Hash the files as the dataset id (dsid)
@@ -38,15 +38,15 @@ class Dataset:
     #
     # Return :
     #   boolean : true or false
-    def compare(self, dataset: object) -> bool:
+    def compare_dataset(self, dataset: object) -> bool:
         return self.dsid == self.compute_hash_dataset(dataset.path)
 
     # Free the memory
-    def stop(self):
+    def stop_dataset(self):
         self.status = false
         self.data = None
 
-    def get(self):
+    def get_dataset(self):
         return self
 
 
@@ -95,7 +95,7 @@ class CsvDataset(Dataset):
     # Warnings:
     #   Merging two csv is relevant only if both csv means the same thing. 
     #   If both have similar columns but different meaning, your work on them will not be relevant 
-    def merge_csv(self, lexicon_path: str, dataset: object):
+    def merge(self, lexicon_path: str, dataset: object) -> object:
         if self.status == False | dataset.status == False:
             raise ValueError("[!] Dataset are inactive. Please activate them first.")
 
@@ -106,8 +106,6 @@ class CsvDataset(Dataset):
         
         th1 = tokenize_headers(columns1)
         th2 = tokenize_headers(columns2)
-
-        print (lex)
 
 
     def get_columns(self):
