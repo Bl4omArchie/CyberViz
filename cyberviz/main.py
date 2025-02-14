@@ -1,4 +1,8 @@
 from cyberviz.convert.export import export_to_parquet
+from cyberviz.formats.csv_ds import CsvDataset
+from cyberviz.formats.pcap_ds import PcapDataset
+from cyberviz.formats.hdf5_ds import Hdf5Dataset
+from cyberviz.formats.parquet_ds import ParquetDataset
 from cyberviz.dataset import *
 
 import dask.dataframe as dd
@@ -76,7 +80,11 @@ class Cyberviz:
     #   boolean value depending on the success of the activation
     #
     def activate_dataset(self, list_dsid: list) -> bool:
-        pass
+        for dsid in list_dsid:
+            if dsid not in self.ids:
+                raise ValueError("Dataset not found")
+
+            self.datasets[dsid].activate()
 
 
     # Create a new dataset based from several ones. You only can merge dataset from the same types.
@@ -92,7 +100,7 @@ class Cyberviz:
             if dsid not in self.ids:
                 print (f"[!] Invalid dsid : {dsid}")
             
-            self.datasets[dsid].merge(lexicon_path, self.datasets[dsid])
+            self.datasets[dsid].merge_dataset(lexicon_path, self.datasets[dsid])
 
 
     # Export a dataset to parquet format
