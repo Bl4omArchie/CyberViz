@@ -3,6 +3,7 @@ from cyberviz.formats.csv_ds import CsvDataset
 from cyberviz.formats.pcap_ds import PcapDataset
 from cyberviz.formats.hdf5_ds import Hdf5Dataset
 from cyberviz.formats.parquet_ds import ParquetDataset
+from cyberviz.formats.pickle_ds import PickleDataset
 from cyberviz.dataset import *
 
 import dask.dataframe as dd
@@ -43,6 +44,9 @@ class Cyberviz:
         
         elif path.endswith(".h5"):
             obj = Hdf5Dataset(path)
+            
+        elif path.endswith(".pickle"):
+            obj = PickleDataset(path)
             
         else:
             raise ValueError("[!] Invalid dataset format. Accepted formats: CSV, PCAP, Parquet, HDF5") 

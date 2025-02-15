@@ -15,3 +15,11 @@ class PcapDataset(Dataset):
 
         if not self.path_dataset.is_file():
             raise ValueError("[!] Invalid path")
+        
+    def activate_dataset(self):
+        self.status = True
+        self.open_dataset()        
+
+    def open_dataset(self):
+        self.status = True
+        self.data = open(self.path_dataset, 'rb')    

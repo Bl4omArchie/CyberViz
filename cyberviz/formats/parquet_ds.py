@@ -20,4 +20,5 @@ class ParquetDataset(Dataset):
         return sha256_hash.hexdigest()
 
     def open_dataset(self):
+        self.status = True
         self.data = dd.read_parquet(self.file_cursor, 'r')
