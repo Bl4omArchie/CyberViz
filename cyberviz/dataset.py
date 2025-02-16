@@ -1,9 +1,8 @@
 from cyberviz.interpreter.tokenizer import *
 from cyberviz.convert import export
 from cyberviz.plot import analyze
+
 from pathlib import Path
-
-
 import hashlib
 
 
@@ -35,7 +34,7 @@ class Dataset:
     # Return :
     #   boolean : true or false
     def compare_dataset(self, dataset: object) -> bool:
-        return self.dsid == self.hash_dataset(dataset.path)
+        return self.dsid == self.dataset.dsid
 
     # Free the memory
     def stop_dataset(self):

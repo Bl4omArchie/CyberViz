@@ -33,6 +33,9 @@ class Cyberviz:
     # Return :
     #   dsid: the unique id of the dataset
     def add_dataset(self, path: str) -> str:
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"[!] The path {path} does not exist")
+
         if path.endswith(".csv"): 
             obj = CsvDataset(path)
         
@@ -73,9 +76,7 @@ class Cyberviz:
         del self.datasets[dsids]
 
 
-    # I want to make a generic function to activate my dataset but my issue is : each dataset have a whole different set 
-    # of parameters for opening the file. So if I make a generic function I have to create a setting file which specify 
-    # parameters for each dataset. 
+    # Load one or several datasets into RAM. 
     #
     # Parameter :
     #   list_dsid : ids of dataset you want to merge
@@ -83,15 +84,17 @@ class Cyberviz:
     # Return :
     #   boolean value depending on the success of the activation
     #
-    def activate_dataset(self, list_dsid: list) -> bool:
+    def activate_dataset(self, list_dsid: list, **kwargs) -> bool:
+        # TODO : handle memory overflow
         for dsid in list_dsid:
             if dsid not in self.ids:
                 raise ValueError("Dataset not found")
 
-            self.datasets[dsid].activate()
+            self.datasets[dsid].activate_dataset(**kwargs)
 
 
-    # Create a new dataset based from several ones. You only can merge dataset from the same types.
+    # Create a new dataset based from several ones. The idea is to have a generic interface that works whatever
+    # the dataset type. But as I haven't implemented yet every converting function, you can merge only dataset from the same type. 
     #
     # Parameter :
     #   list_dsid : ids of dataset you want to merge
@@ -99,13 +102,11 @@ class Cyberviz:
     # Returns :
     #   id of new dataset
     #
-    def merge(self, lexicon_path: str, list_dsid: list) -> str:
+    def merge(self, dsid_to_merge: str, list_dsid: list) -> str:
         for dsid in list_dsid:
             if dsid not in self.ids:
                 print (f"[!] Invalid dsid : {dsid}")
             
-            self.datasets[dsid].merge_dataset(lexicon_path, self.datasets[dsid])
-
 
     # Export a dataset to parquet format
     #

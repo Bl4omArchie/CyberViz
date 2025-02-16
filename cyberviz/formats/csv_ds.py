@@ -18,11 +18,24 @@ class CsvDataset(Dataset):
         if not self.path_dataset.is_file():
             raise ValueError("[!] Invalid path")
 
+        self.parameters = (chunksize:=None, usecols:=None, sep:=None, encoding:="UTF-8")
+
 
     # When the dataset is active, data is loaded into memory
-    def activate_dataset(self, chunksize=None, usecols=None, sep=None, encoding="UTF-8"):
+    # TODO : handle arguments checking
+    #
+    # Arguments :
+    #   chunksize=None : you can split your csv into several files to avoid memory overflow
+    #   usecols=None : specify which columns you want to use
+    #   sep=None : specify the seperator used by your CSV
+    #   encoding="UTF-8 : default encoding is UTF-8
+    def activate_dataset(self, **kwargs):
+        input_set = set(kwargs.keys())
+        args_set = ("chunksize", "usecols", "sep", "encoding")
+
+        self.open_dataset()
+
         self.status = True
-        self.open_dataset(chunksize, usecols, sep, encoding)
         
     
     # Load the csv dataset into memory
@@ -33,12 +46,12 @@ class CsvDataset(Dataset):
     #   sep : define the separator
     #   encoding : UTF-8 by default
     #
-    def open_dataset(self, chunksize=None, usecols=None, sep=None, encoding="UTF-8"):
-        if chunksize:
-            self.data = dd.read_csv(self.path_dataset, chunksize=chunksize, usecols=usecols, sep=sep, encoding=encoding)
+    def open_dataset(self):
+        if self.parameters.chunksize:
+            self.data = dd.read_csv(self.path_dataset, chunksize=self.parameters.chunksize, usecols=self.parameters.usecols, sep=self.parameters.sep, encoding=self.parameters.encoding)
             self.data = self.data[0]
         else:
-            self.data = dd.read_csv(self.path_dataset, usecols=usecols, sep=sep, encoding=encoding)
+            self.data = dd.read_csv(self.path_dataset, usecols=self.parameters.usecols, sep=self.parameters.sep, encoding=self.parameters.encoding)
 
 
     # Correlate columns from different csv
