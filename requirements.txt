@@ -3,3 +3,4 @@ pyarrow
 pandas
 seaborn
 pickledb
+scikit-learn

@@ -18,11 +18,20 @@ class CsvDataset(Dataset):
         if not self.path_dataset.is_file():
             raise ValueError("[!] Invalid path")
 
-        self.parameters = (chunksize:=None, usecols:=None, sep:=None, encoding:="UTF-8")
+        self.parameters = {
+            "sep":None,             # separator between each values
+            "blocksize":None,       # number of bytes by which to cut up larger files
+            "chunksize":None,       # number of rows to include in each chunk
+            "usecols":None,         # specify which columns you want to use
+            "engine": "pyarrow",     # engine to use for parsing (ie : pyarrow, c)
+            "assume_missing":False, # if True, all integer columns that aren’t specified in dtype are assumed to contain missing values, and are converted to floats
+            "nrows":None,           # number of rows to read at a time
+            "encoding":"UTF-8",     # encoding of the file
+            "extra_parameters":None # extra parameters
+        }
 
 
     # When the dataset is active, data is loaded into memory
-    # TODO : handle arguments checking
     #
     # Arguments :
     #   chunksize=None : you can split your csv into several files to avoid memory overflow
@@ -31,10 +40,13 @@ class CsvDataset(Dataset):
     #   encoding="UTF-8 : default encoding is UTF-8
     def activate_dataset(self, **kwargs):
         input_set = set(kwargs.keys())
-        args_set = ("chunksize", "usecols", "sep", "encoding")
-
+        
+        for input in input_set:
+            if input not in self.parameters.keys():
+                self.parameters["extra_parameters"] = kwargs[input]
+            self.parameters[input] = kwargs[input]
+        
         self.open_dataset()
-
         self.status = True
         
     
@@ -47,11 +59,8 @@ class CsvDataset(Dataset):
     #   encoding : UTF-8 by default
     #
     def open_dataset(self):
-        if self.parameters.chunksize:
-            self.data = dd.read_csv(self.path_dataset, chunksize=self.parameters.chunksize, usecols=self.parameters.usecols, sep=self.parameters.sep, encoding=self.parameters.encoding)
-            self.data = self.data[0]
-        else:
-            self.data = dd.read_csv(self.path_dataset, usecols=self.parameters.usecols, sep=self.parameters.sep, encoding=self.parameters.encoding)
+        read_csv_params = {key: value for key, value in self.parameters.items() if value is not None}
+        self.data = dd.read_csv(self.path_dataset, **read_csv_params)
 
 
     # Correlate columns from different csv

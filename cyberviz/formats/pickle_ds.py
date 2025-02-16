@@ -3,6 +3,7 @@ from cyberviz.interpreter.tokenizer import *
 
 import dask.dataframe as dd
 import pandas as pd
+import sklearn
 import pickle
 
 

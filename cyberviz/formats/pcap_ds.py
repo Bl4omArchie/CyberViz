@@ -22,4 +22,4 @@ class PcapDataset(Dataset):
 
     def open_dataset(self):
         self.status = True
-        self.data = open(self.path_dataset, 'rb')    
+        self.data = open(self.path_dataset, 'rb')
