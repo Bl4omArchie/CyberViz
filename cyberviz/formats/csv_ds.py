@@ -30,6 +30,9 @@ class CsvDataset(Dataset):
             "extra_parameters":None # extra parameters
         }
 
+        self.lexicon_path="cyberviz/interpreter/lexicon.json"
+        self.lexicon=None
+
 
     # When the dataset is active, data is loaded into memory
     #
@@ -63,33 +66,42 @@ class CsvDataset(Dataset):
         self.data = dd.read_csv(self.path_dataset, **read_csv_params)
 
 
-    # Correlate columns from different csv
+    # Merge two csv into one by correlating columns
     #
     # Parameters:
-    #   lexicon_path : a lexicon is a json with several words for one translation
-    #   dataset : another csv so you can merge them
+    #   lexicon_path : a lexicon is a set of synonym or abreviation where one word is picked to represent all of them
+    #   dataset : the dataset to merge with
     #
     # Warnings:
     #   Merging two csv is relevant only if both csv means the same thing. 
     #   If both have similar columns but different meaning, your work on them will not be relevant 
-    def merge_dataset(self, lexicon_path: str, dataset: object) -> object:
+    #
+    def merge_dataset(self, dataset: object) -> object:
         if self.status == False | dataset.status == False:
             raise ValueError("[!] Dataset are inactive. Please activate them first.")
 
-        lex = get_lexicon(lexicon_path)
+        if self.lexicon is None:
+            self.activate_lexicon()
 
-        columns1 = self.get_columns()
-        columns2 = dataset.get_columns()
-        
-        th1 = tokenize_headers(columns1)
-        th2 = tokenize_headers(columns2)
+        merged_headers = match_headers(self.get_headers(), dataset.get_headers(), self.lexicon)
+        print (merged_headers)
+    
 
 
-    def get_columns(self):
+    def get_headers(self):
         if self.status:
             return self.data.columns.tolist()
         else:
             raise ValueError("[!] Dataset is inactive. Please activate the dataset first.")
+
+
+    def set_lexicon(self, lexicon_path: str):
+        self.lexicon_path = lexicon_path
+
+    def activate_lexicon(self):
+        if self.lexicon_path is None:
+            raise ValueError("[!] Please specify a lexicon path")
+        self.lexicon = get_lexicon(self.lexicon_path)
 
 
     def basics_data(self):

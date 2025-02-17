@@ -102,10 +102,16 @@ class Cyberviz:
     # Returns :
     #   id of new dataset
     #
-    def merge(self, dsid_to_merge: str, list_dsid: list) -> str:
+    def merge(self, dsid_to_merge: str, list_dsid: list):
         for dsid in list_dsid:
             if dsid not in self.ids:
-                print (f"[!] Invalid dsid : {dsid}")
+                raise ValueError(f"[!] Invalid dsid : {dsid}")
+            
+            if dsid_to_merge == dsid:   # you can't merge a dataset to itself, it will skip to the next dataset
+                print ("[!] Can't merge the same dataset to itself")
+                continue
+            
+            self.datasets[dsid_to_merge].merge_dataset(self.datasets[dsid])
             
 
     # Export a dataset to parquet format

@@ -29,16 +29,16 @@ class Dataset:
         
         return sha256_hash.hexdigest()
     
-    # Compare the hash of two dataset
+    # Compare the hash of two datasets
     #
     # Return :
     #   boolean : true or false
     def compare_dataset(self, dataset: object) -> bool:
-        return self.dsid == self.dataset.dsid
+        return self.dsid == dataset.dsid
 
     # Free the memory
     def stop_dataset(self):
-        self.status = false
+        self.status = False
         self.data = None
 
     def get_dataset(self):
