@@ -2,6 +2,7 @@ import json
 import os
 import re
 
+
 # A lexicon is a set of synonym or abbreviation where one word is picked to represent all of them
 # 
 # Parameters :
@@ -28,7 +29,7 @@ def tokenize_headers(set_headers: list, lexicon: dict) -> list:
     for header in set_headers:
         tokens = re.split(r'[\W_]+', header.lower().strip())     # Remove special characters and lowercase
         unified_tokens = [lexicon.get(token, token) for token in tokens]    # Use lexicon to unify words and abbreviations
-        tokenized_headers.append(" ".join(unified_tokens))  # Join tokens to form the unified header
+        tokenized_headers.append(" ".join(unified_tokens))  # Join tokens
 
     return tokenized_headers
 

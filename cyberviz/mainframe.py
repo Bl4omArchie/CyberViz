@@ -4,7 +4,7 @@ from cyberviz.formats.pcap_ds import PcapDataset
 from cyberviz.formats.hdf5_ds import Hdf5Dataset
 from cyberviz.formats.parquet_ds import ParquetDataset
 from cyberviz.formats.pickle_ds import PickleDataset
-from cyberviz.dataset import *
+from cyberviz.dataset import Dataset
 
 import dask.dataframe as dd
 import random
