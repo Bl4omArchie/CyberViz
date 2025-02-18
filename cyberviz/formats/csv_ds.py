@@ -83,8 +83,9 @@ class CsvDataset(Dataset):
         if self.lexicon is None:
             self.activate_lexicon()
 
+        print (tokenize_headers(["avg"], self.lexicon))
+
         merged_headers = match_headers(self.get_headers(), dataset.get_headers(), self.lexicon)
-        print (merged_headers)
     
 
 

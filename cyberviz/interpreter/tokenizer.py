@@ -28,27 +28,19 @@ def tokenize_headers(set_headers: list, lexicon: dict) -> list:
     for header in set_headers:
         tokens = re.split(r'[\W_]+', header.lower().strip())     # Remove special characters and lowercase
         unified_tokens = [lexicon.get(token, token) for token in tokens]    # Use lexicon to unify words and abbreviations
-        tokenized_headers.append(unified_tokens)
+        tokenized_headers.append(" ".join(unified_tokens))  # Join tokens to form the unified header
 
     return tokenized_headers
 
 
-# Take two sets of headers and match them into one set
-def match_headers(headers_a: list, headers_b: list, lexicon: dict) -> list:
-    tokenized_headers_a = tokenize_headers(headers_a, lexicon)
-    tokenized_headers_b = tokenize_headers(headers_b, lexicon)
-
-    set_merged_headers = []
-    unmatched_headers = []
-
-    for header_a in tokenized_headers_a:
-        if header_a in tokenized_headers_b:
-            set_merged_headers.append(header_a)
-        else:
-            unmatched_headers.append(header_a)
-
-    for header_b in tokenized_headers_b:
-        if header_b not in tokenized_headers_a:
-            unmatched_headers.append(header_b)
-
-    return [set_merged_headers, unmatched_headers]
+# Parameters :
+#   headers_a : headers base comparison
+#   headers_b : headers to be compared to headers_a
+#   lexicon : the reversed lexicon ( use get_lexicon() )
+#
+# Return :
+#   A dict of headers_b with the corresponding header_a
+#   If no headers match, the value is None
+# 
+def match_headers(headers_a: list, headers_b: list, lexicon: dict) -> dict:
+    return list(dict.fromkeys(tokenize_headers(headers_a, lexicon) + tokenize_headers(headers_b, lexicon)))

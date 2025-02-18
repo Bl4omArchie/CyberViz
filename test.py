@@ -15,8 +15,8 @@ if __name__ == "__main__":
     cz.activate_dataset([dsid3])
     """
 
-    dsid1 = cz.add_dataset("data/cic-bot-iot.csv")
-    dsid2 = cz.add_dataset("data/hiraki2021.csv")
+    dsid2 = cz.add_dataset("data/cic-bot-iot.csv")
+    dsid1 = cz.add_dataset("data/hiraki2021.csv")
 
     cz.activate_dataset([dsid1, dsid2], sep=",")
 
