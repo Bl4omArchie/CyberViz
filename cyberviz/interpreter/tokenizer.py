@@ -27,9 +27,9 @@ def tokenize_headers(set_headers: list, lexicon: dict) -> list:
     tokenized_headers = []
 
     for header in set_headers:
-        tokens = re.split(r'[\W_]+', header.lower().strip())     # Remove special characters and lowercase
+        tokens = re.split(r'[\W_]+', header.lower().strip())                # Remove special characters and lowercase
         unified_tokens = [lexicon.get(token, token) for token in tokens]    # Use lexicon to unify words and abbreviations
-        tokenized_headers.append(" ".join(unified_tokens))  # Join tokens
+        tokenized_headers.append("".join(unified_tokens))                   # Join tokens without spaces
 
     return tokenized_headers
 

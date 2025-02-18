@@ -15,9 +15,6 @@ class CsvDataset(Dataset):
             self.format_dataset = "csv"
             self.extension_dataset = ".csv"
 
-        if not self.path_dataset.is_file():
-            raise ValueError("[!] Invalid path")
-
         self.parameters = {
             "sep":None,             # separator between each values
             "blocksize":None,       # number of bytes by which to cut up larger files

@@ -8,13 +8,15 @@ import hashlib
 
 class Dataset:
     def __init__(self, path: str):
+        self.path_dataset = Path(path)
+        if not self.path_dataset.is_file():
+            raise ValueError("[!] Invalid path")
+
         self.dsid = self.hash_dataset(path)
         self.data = None
-        self.path_dataset = Path(path)
         self.format_dataset = None
         self.extension_dataset = None
         self.status = False
-
 
     # Hash the files as the dataset id (dsid)
     # 

@@ -1,8 +1,13 @@
 import cyberviz.mainframe as mf
+from tests.test_tokenizer import *
+from tests.test_csv_ds import *
 
 
 
-if __name__ == "__main__":
+def launch_test():
+    unittest.main()
+
+def load_dataset_test():
     obj = mf.Cyberviz()
     
     """
@@ -21,3 +26,8 @@ if __name__ == "__main__":
     obj.activate_dataset([dsid1, dsid2], sep=",")
 
     obj.merge(dsid1, [dsid2])
+
+
+if __name__ == "__main__":
+    launch_test()
+    #load_dataset_test()
