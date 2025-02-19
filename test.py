@@ -1,4 +1,4 @@
-import cyberviz.mainframe as mf
+import cyberviz.cyberframe as mf
 from tests.test_tokenizer import *
 from tests.test_csv_ds import *
 
@@ -20,8 +20,8 @@ def load_dataset_test():
     obj.activate_dataset([dsid3])
     """
 
-    dsid2 = obj.add_dataset("data/cic-bot-iot.csv")
-    dsid1 = obj.add_dataset("data/hiraki2021.csv")
+    dsid1 = obj.add_dataset("data/test_1.csv")
+    dsid2 = obj.add_dataset("data/test_2.csv")
 
     obj.activate_dataset([dsid1, dsid2], sep=",")
 
@@ -29,5 +29,5 @@ def load_dataset_test():
 
 
 if __name__ == "__main__":
-    launch_test()
-    #load_dataset_test()
+    #launch_test()
+    load_dataset_test()

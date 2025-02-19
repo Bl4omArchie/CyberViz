@@ -26,6 +26,8 @@ def get_lexicon(filepath: str) -> dict:
 def tokenize_headers(set_headers: list, lexicon: dict) -> list:
     tokenized_headers = []
 
+    #TODO : translate into english, correct grammar errors
+
     for header in set_headers:
         tokens = re.split(r'[\W_]+', header.lower().strip())                # Remove special characters and lowercase
         unified_tokens = [lexicon.get(token, token) for token in tokens]    # Use lexicon to unify words and abbreviations
@@ -44,4 +46,18 @@ def tokenize_headers(set_headers: list, lexicon: dict) -> list:
 #   If no headers match, the value is None
 # 
 def match_headers(headers_a: list, headers_b: list, lexicon: dict) -> dict:
-    return list(dict.fromkeys(tokenize_headers(headers_a, lexicon) + tokenize_headers(headers_b, lexicon)))
+    res = {}
+    tha = tokenize_headers(headers_a, lexicon)
+    thb = tokenize_headers(headers_b, lexicon)
+
+    #TODO : more flexible matching. For instance fl4w_duration should match flow_duration
+
+    for hb, tokenized_hb in zip(headers_b, thb):
+        match = None
+        for ha, tokenized_ha in zip(headers_a, tha):
+            if tokenized_hb == tokenized_ha:
+                match = ha
+                break
+        res[hb] = match
+
+    return res

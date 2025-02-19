@@ -161,4 +161,6 @@ class Cyberviz:
     #   dsid: dataset id
     # 
     def analyze(self, dsid: str):
-        self.datasets.get(dsid).open(chunksize=10, sep=",")
+        if self.datasets.get(dsid).status == False:
+            raise ValueError("[!] Inactive dataset, please active it first")
+        self.datasets.get(dsid).basics_data()

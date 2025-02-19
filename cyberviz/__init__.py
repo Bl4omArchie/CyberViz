@@ -1,4 +1,4 @@
-from .mainframe import Cyberviz
+from .cyberframe import Cyberviz
 from .dataset import Dataset
 
-__all__ = ["mainframe", "dataset"]
+__all__ = ["cyberframe", "dataset"]

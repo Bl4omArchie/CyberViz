@@ -20,7 +20,7 @@ class CsvDataset(Dataset):
             "blocksize":None,       # number of bytes by which to cut up larger files
             "chunksize":None,       # number of rows to include in each chunk
             "usecols":None,         # specify which columns you want to use
-            "engine": "pyarrow",     # engine to use for parsing (ie : pyarrow, c)
+            "engine": "pyarrow",    # engine to use for parsing (ie : pyarrow, c)
             "assume_missing":False, # if True, all integer columns that aren’t specified in dtype are assumed to contain missing values, and are converted to floats
             "nrows":None,           # number of rows to read at a time
             "encoding":"UTF-8",     # encoding of the file
@@ -73,17 +73,20 @@ class CsvDataset(Dataset):
     #   Merging two csv is relevant only if both csv means the same thing. 
     #   If both have similar columns but different meaning, your work on them will not be relevant 
     #
-    def merge_dataset(self, dataset: object) -> object:
-        if self.status == False | dataset.status == False:
-            raise ValueError("[!] Dataset are inactive. Please activate them first.")
+    def merge_dataset(self, dataset: object):
+        if self.status == False or dataset.status == False:
+            raise ValueError("[!] Datasets are inactive. Please activate them first.")
 
         if self.lexicon is None:
             self.activate_lexicon()
 
-        print (tokenize_headers(["avg"], self.lexicon))
+        merged_headers = match_headers(self.data.columns.tolist(), dataset.data.columns.tolist(), self.lexicon)
 
-        merged_headers = match_headers(self.get_headers(), dataset.get_headers(), self.lexicon)
-    
+        for header_b, value in merged_headers.items():
+            if value is not None:
+                self.data = self.data.merge(dataset.data[[header_b]], left_on=value, right_on=header_b, how='left')
+        
+        self.data.to_csv(self.path_dataset, single_file=True)
 
 
     def get_headers(self):
@@ -103,4 +106,12 @@ class CsvDataset(Dataset):
 
 
     def basics_data(self):
-        pass
+        if self.status == False:
+            raise ValueError("[!] Dataset is inactive. Please activate it first.")
+
+        # Count the number of 'Label' values that are True
+        true_label_count = self.data[self.data['Label'] == True].shape[0].compute()
+        print(true_label_count)
+
+        #print(self.data.shape)
+        #print(self.data.describe())
