@@ -133,6 +133,10 @@ class Cyberviz:
             print(f"[!] Failed to export dataset to parquet: {e}")
 
 
+    def get_dataset(self, dsid: str):
+        return self.datasets.get(dsid)
+
+
     # Get the hash of the dataset
     # Parameter :   
     #   dsid: dataset id

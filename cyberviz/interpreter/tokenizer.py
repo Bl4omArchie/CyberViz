@@ -1,3 +1,4 @@
+import Levenshtein
 import json
 import os
 import re
@@ -36,13 +37,15 @@ def tokenize_headers(set_headers: list, lexicon: dict) -> list:
     return tokenized_headers
 
 
+# Match headers from two different set
+#
 # Parameters :
 #   headers_a : headers base comparison
 #   headers_b : headers to be compared to headers_a
 #   lexicon : the reversed lexicon ( use get_lexicon() )
 #
 # Return :
-#   A dict of headers_b with the corresponding header_a
+#   A dict with each headers_b as a key add with the matching header_a as a value
 #   If no headers match, the value is None
 # 
 def match_headers(headers_a: list, headers_b: list, lexicon: dict) -> dict:
@@ -59,5 +62,17 @@ def match_headers(headers_a: list, headers_b: list, lexicon: dict) -> dict:
                 match = ha
                 break
         res[hb] = match
+
+    return res
+
+
+# Format headers to a specific correction : english, lowercase, grammar check, spaced with underscore
+#
+# Parameters :
+#   headers_a : a list of headers to be corrected
+#   lexicon : your lexicon for unification of synonym and abreviation
+#
+def correct_headers(headers_a: list, lexicon: dict) -> list:
+    res = []
 
     return res

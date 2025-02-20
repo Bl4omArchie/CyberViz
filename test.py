@@ -1,6 +1,5 @@
 import cyberviz.cyberframe as mf
 from tests.test_tokenizer import *
-from tests.test_csv_ds import *
 
 
 
@@ -25,7 +24,7 @@ def load_dataset_test():
 
     obj.activate_dataset([dsid1, dsid2], sep=",")
 
-    obj.merge(dsid1, [dsid2])
+    obj.get_dataset(dsid1).correct_headers()
 
 
 if __name__ == "__main__":

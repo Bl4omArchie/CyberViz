@@ -88,6 +88,16 @@ class CsvDataset(Dataset):
         
         self.data.to_csv(self.path_dataset, single_file=True)
 
+    def correct_headers(self):
+        if self.status == False:
+            raise ValueError("[!] Datasets are inactive. Please activate them first.")
+
+        if self.lexicon is None:
+            self.activate_lexicon()
+
+        print (self.data.columns.tolist())
+        print (tokenize_headers(self.data.columns.tolist(), self.lexicon))
+
 
     def get_headers(self):
         if self.status:
