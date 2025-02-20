@@ -6,6 +6,7 @@ from pathlib import Path
 import hashlib
 
 
+# Generic class
 class Dataset:
     def __init__(self, path: str):
         self.path_dataset = Path(path)

@@ -24,9 +24,9 @@ def load_dataset_test():
 
     obj.activate_dataset([dsid1, dsid2], sep=",")
 
-    obj.get_dataset(dsid1).correct_headers()
+    obj.merge_dataset(dsid1, [dsid2])
 
 
 if __name__ == "__main__":
-    #launch_test()
-    load_dataset_test()
+    launch_test()
+    #load_dataset_test()

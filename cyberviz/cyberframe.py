@@ -11,6 +11,7 @@ import random
 import os
 
 
+# Main interface
 class Cyberviz:
     """
     Cyberviz is a class that takes datasets and performs operations like compression, statistics, and more.
@@ -102,7 +103,7 @@ class Cyberviz:
     # Returns :
     #   id of new dataset
     #
-    def merge(self, dsid_to_merge: str, list_dsid: list):
+    def merge_dataset(self, dsid_to_merge: str, list_dsid: list):
         for dsid in list_dsid:
             if dsid not in self.ids:
                 raise ValueError(f"[!] Invalid dsid : {dsid}")
@@ -111,7 +112,7 @@ class Cyberviz:
                 print ("[!] Can't merge the same dataset to itself")
                 continue
             
-            self.datasets[dsid_to_merge].merge_dataset(self.datasets[dsid])
+            self.datasets[dsid_to_merge].merge_headers(self.datasets[dsid])
             
 
     # Export a dataset to parquet format
@@ -155,12 +156,14 @@ class Cyberviz:
     # A datalake is defined as a single folder where only parquet file are stored
     # A json file keep track of each file to get them back to their original format
     # The purpose of the datalake is to store efficiently data for other purpose like data visualization or AI 
+    #
     def create_datalake(self):
         for key, val in self.datasets.items():
             print(key, val)
 
 
     # Make basic analysis of the dataset
+    #
     # Parameter :
     #   dsid: dataset id
     # 

@@ -13,31 +13,19 @@ test_csv1 = """flow_totAL,flow_partial@,label,test_column4
 """ 
 
 
-header_test_one = ["avg.flow_duration", "win_size78_@", "average_tcp_flow"]
-header_test_two = ["average-flow-time", "window_size", "avg_flow"]
 
-expected_match_header_two = {"average-flow-time": "avg.flow_duration", "window_size": "win_size78_@", "avg_flow": None}
-expected_corr_header_one = ["average_flow_duration", "win_size_78_@", "average_tcp_flow"]
-expected_corr_header_two = ["average_flow_duration", "window_size", "average_flow"]
-
-
+# TODO : there is still a lot of cases where the algorithm doesn't work (ie: with number or separated words)
 class TestTokenizer(unittest.TestCase):
     def setUp(self):
         self.lexicon_path = "cyberviz/interpreter/lexicon.json"
-        self.lexicon = get_lexicon(self.lexicon_path)
-    
+               
+        self.header_test_one = ["avg.flow_duration", "bwd_78_@", "average_tcp_flow"]
+        self.expected_tokenized_header_one = ["average_flow_duration", "backward_78_@", "average_tcp_flow"]
 
-    def test_match_headers(self):
-        headers1 = ["header1", "average", "window_size"]
-        headers2 = ["avg", "win_size"]
-        expected_result = {"avg": "average", "win_size": None}
-
-        result = match_headers(headers1, headers2, get_lexicon(self.lexicon_path))
-        self.assertEqual(result, expected_result)
+        self.tokenizer = Tokenizer(self.lexicon_path)
+        self.tokenizer.get_reverse_lexicon()
 
     def test_tokenize_headers(self):
-        headers = ["Header1!", "HEADER2@", "header3#"]
-        expected_result = ["header1", "header2", "header3"]
-        
-        result = tokenize_headers(headers, self.lexicon)
-        self.assertEqual(result, expected_result)
+        print (self.tokenizer.tokenize_headers(self.header_test_one))
+        self.assertEqual(self.tokenizer.tokenize_headers(self.header_test_one), self.expected_tokenized_header_one)
+            

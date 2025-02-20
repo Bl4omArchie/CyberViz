@@ -1,78 +1,58 @@
+from pathlib import Path
 import Levenshtein
 import json
 import os
 import re
 
 
+
+# The tokenize is a class to correct and tokenize headers
 # A lexicon is a set of synonym or abbreviation where one word is picked to represent all of them
-# 
-# Parameters :
-#   filepath : the lexicon is a json file (see example in lexicon.json) 
 #
-def get_lexicon(filepath: str) -> dict:
-    with open(filepath, 'r') as file:
-        lexicon = json.load(file)
-
-    return {synonym: key for key, synonyms in lexicon.items() for synonym in synonyms}
-
-
-# Remove special characters, lowercase headers, unified headers with lexicon
+# Parameter :
+#   lexicon_path : path to your lexicon (json file)   
 #
-# Parameters :
-#   set_headers : headers from a file
-#
-# Return :
-#   The tokenized headers
-#
-def tokenize_headers(set_headers: list, lexicon: dict) -> list:
-    tokenized_headers = []
+class Tokenizer:
+    def __init__(self, lexicon_path: str):
+        self.lexicon_path = Path(lexicon_path)
 
-    #TODO : translate into english, correct grammar errors
+        if not self.lexicon_path.is_file():
+            raise ValueError("[!] Invalid lexicon path")
 
-    for header in set_headers:
-        tokens = re.split(r'[\W_]+', header.lower().strip())                # Remove special characters and lowercase
-        unified_tokens = [lexicon.get(token, token) for token in tokens]    # Use lexicon to unify words and abbreviations
-        tokenized_headers.append("".join(unified_tokens))                   # Join tokens without spaces
+        self.reverse_lexicon = None
 
-    return tokenized_headers
+    
+    # Algorithm : A reversed lexicon is an reversed dictionnary which make search function fast as O(1).  
+    #
+    # Complexity :
+    #   Search : O(1)
+    def get_reverse_lexicon(self):
+        with open(self.lexicon_path, 'r') as file:
+            self.reverse_lexicon = json.load(file)
 
-
-# Match headers from two different set
-#
-# Parameters :
-#   headers_a : headers base comparison
-#   headers_b : headers to be compared to headers_a
-#   lexicon : the reversed lexicon ( use get_lexicon() )
-#
-# Return :
-#   A dict with each headers_b as a key add with the matching header_a as a value
-#   If no headers match, the value is None
-# 
-def match_headers(headers_a: list, headers_b: list, lexicon: dict) -> dict:
-    res = {}
-    tha = tokenize_headers(headers_a, lexicon)
-    thb = tokenize_headers(headers_b, lexicon)
-
-    #TODO : more flexible matching. For instance fl4w_duration should match flow_duration
-
-    for hb, tokenized_hb in zip(headers_b, thb):
-        match = None
-        for ha, tokenized_ha in zip(headers_a, tha):
-            if tokenized_hb == tokenized_ha:
-                match = ha
-                break
-        res[hb] = match
-
-    return res
+        self.reverse_lexicon = {synonym: key for key, synonyms in self.reverse_lexicon.items() for synonym in synonyms}
 
 
-# Format headers to a specific correction : english, lowercase, grammar check, spaced with underscore
-#
-# Parameters :
-#   headers_a : a list of headers to be corrected
-#   lexicon : your lexicon for unification of synonym and abreviation
-#
-def correct_headers(headers_a: list, lexicon: dict) -> list:
-    res = []
+    # Feature : Remove special characters, lowercase headers, unified words with lexicon
+    #
+    # Parameters :
+    #   set_headers : headers from a file
+    #
+    # Return :
+    #   The tokenized headers
+    #
+    def tokenize_headers(self, set_headers: list) -> list:
+        tokenized_headers = []
 
-    return res
+        #TODO : translate into english, correct grammar errors
+
+        for header in set_headers:
+            header_token = header.replace(" ", "_").replace(".", "_").lower().split("_")
+
+            for i in range(len(header_token)):
+                word = self.reverse_lexicon.get(header_token[i])
+                if word is not None:
+                    header_token[i] = word
+            tokenized_headers.append("_".join(header_token))
+
+        return tokenized_headers

@@ -27,8 +27,7 @@ class CsvDataset(Dataset):
             "extra_parameters":None # extra parameters
         }
 
-        self.lexicon_path="cyberviz/interpreter/lexicon.json"
-        self.lexicon=None
+        self.lexicon_path = "cyberviz/interpreter/lexicon.json"
 
 
     # When the dataset is active, data is loaded into memory
@@ -73,46 +72,37 @@ class CsvDataset(Dataset):
     #   Merging two csv is relevant only if both csv means the same thing. 
     #   If both have similar columns but different meaning, your work on them will not be relevant 
     #
-    def merge_dataset(self, dataset: object):
+    def merge_headers(self, dataset: object):
         if self.status == False or dataset.status == False:
             raise ValueError("[!] Datasets are inactive. Please activate them first.")
 
-        if self.lexicon is None:
-            self.activate_lexicon()
+        tookener = Tokenizer(self.lexicon_path)
+        tookener.get_reverse_lexicon()
+        tookened_a = tookener.tokenize_headers(self.data.columns.tolist())
+        tookened_b = tookener.tokenize_headers(dataset.data.columns.tolist())
 
-        merged_headers = match_headers(self.data.columns.tolist(), dataset.data.columns.tolist(), self.lexicon)
+        print (tookened_a, tookened_b)
 
+        """
         for header_b, value in merged_headers.items():
             if value is not None:
                 self.data = self.data.merge(dataset.data[[header_b]], left_on=value, right_on=header_b, how='left')
         
         self.data.to_csv(self.path_dataset, single_file=True)
+        """
 
     def correct_headers(self):
         if self.status == False:
             raise ValueError("[!] Datasets are inactive. Please activate them first.")
 
-        if self.lexicon is None:
-            self.activate_lexicon()
-
-        print (self.data.columns.tolist())
-        print (tokenize_headers(self.data.columns.tolist(), self.lexicon))
-
+    def set_lexicon_path(self, lexicon_path: str):
+        self.lexicon_path = lexicon_path 
 
     def get_headers(self):
         if self.status:
             return self.data.columns.tolist()
         else:
             raise ValueError("[!] Dataset is inactive. Please activate the dataset first.")
-
-
-    def set_lexicon(self, lexicon_path: str):
-        self.lexicon_path = lexicon_path
-
-    def activate_lexicon(self):
-        if self.lexicon_path is None:
-            raise ValueError("[!] Please specify a lexicon path")
-        self.lexicon = get_lexicon(self.lexicon_path)
 
 
     def basics_data(self):
@@ -122,6 +112,3 @@ class CsvDataset(Dataset):
         # Count the number of 'Label' values that are True
         true_label_count = self.data[self.data['Label'] == True].shape[0].compute()
         print(true_label_count)
-
-        #print(self.data.shape)
-        #print(self.data.describe())
