@@ -3,6 +3,7 @@ from cyberviz.interpreter.tokenizer import *
 
 import dask.dataframe as dd
 import pandas as pd
+import Levenshtein
 
 
 class CsvDataset(Dataset):
@@ -28,6 +29,9 @@ class CsvDataset(Dataset):
         }
 
         self.lexicon_path = "cyberviz/interpreter/lexicon.json"
+        
+        # When the levenshtein ration is above 0.8, the two compared string are most likely the same (ie : column and column8 are the same)
+        self.levenshtein_ratio_min = 0.8
 
 
     # Requirements : When the dataset is active, data is loaded into memory
@@ -76,12 +80,20 @@ class CsvDataset(Dataset):
         if self.status == False or dataset.status == False:
             raise ValueError("[!] Datasets are inactive. Please activate them first.")
 
-        tookener = Tokenizer(self.lexicon_path)
-        tookener.get_reverse_lexicon()
-        tookened_a = tookener.tokenize_headers(self.data.columns.tolist())
-        tookened_b = tookener.tokenize_headers(dataset.data.columns.tolist())
+        tokener = Tokenizer(self.lexicon_path)
+        tokener.get_reverse_lexicon()
+        tokened_a = tokener.tokenize_headers(self.data.columns.tolist())
+        tokened_b = tokener.tokenize_headers(dataset.data.columns.tolist())
 
-        print (tookened_a, tookened_b)
+        matching_headers = {}
+
+        for i in range(len(tokened_a)):
+            for y in range(len(tokened_b)):
+                if Levenshtein.ratio(tokened_a[i], tokened_b[y]) > 0.8:
+                    matching_headers[tokened_b[i]: tokened_a[i]]
+
+        # TODO : handle merging of the two datasets
+
 
         """
         for header_b, value in merged_headers.items():
