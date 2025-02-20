@@ -30,7 +30,7 @@ class CsvDataset(Dataset):
         self.lexicon_path = "cyberviz/interpreter/lexicon.json"
 
 
-    # When the dataset is active, data is loaded into memory
+    # Requirements : When the dataset is active, data is loaded into memory
     #
     # Arguments :
     #   chunksize=None : you can split your csv into several files to avoid memory overflow
@@ -49,7 +49,7 @@ class CsvDataset(Dataset):
         self.status = True
         
     
-    # Load the csv dataset into memory
+    # Requirements : Load the csv dataset into memory
     #
     # Parameters :
     #   chunksize : split the csv into multiple file so you don't open it all
@@ -62,7 +62,7 @@ class CsvDataset(Dataset):
         self.data = dd.read_csv(self.path_dataset, **read_csv_params)
 
 
-    # Merge two csv into one by correlating columns
+    # Feature : Merge two csv into one by correlating columns
     #
     # Parameters:
     #   lexicon_path : a lexicon is a set of synonym or abreviation where one word is picked to represent all of them
@@ -91,12 +91,17 @@ class CsvDataset(Dataset):
         self.data.to_csv(self.path_dataset, single_file=True)
         """
 
+    # Feature : use the same logic for merging two datasets but instead modify the current dataset headers for more standard headers
+    #
     def correct_headers(self):
         if self.status == False:
             raise ValueError("[!] Datasets are inactive. Please activate them first.")
 
+
+    # Requirements : set the lexicon path (json file)
     def set_lexicon_path(self, lexicon_path: str):
         self.lexicon_path = lexicon_path 
+
 
     def get_headers(self):
         if self.status:

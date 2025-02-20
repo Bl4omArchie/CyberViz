@@ -13,6 +13,12 @@ Features :
 - AI training : pytorch integration for ML, DL...
 - Plotting : display yout dataset through graphics
 
+# Notes
+
+In my commentaries, I use special tags for the purpose of each function.
+- Feature : main function you can call to enjoy Cyberviz
+- Requirement : function you have to call before using features
+- Algorithm : functon useful for my features that you don't have to use
 
 # Use cases
 
