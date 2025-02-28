@@ -28,5 +28,5 @@ def load_dataset_test():
 
 
 if __name__ == "__main__":
-    #launch_test()
-    load_dataset_test()
+    launch_test()
+    #load_dataset_test()

@@ -4,7 +4,6 @@ import dask.dataframe as dd
 import pandas as pd
 
 
-
 class PcapDataset(Dataset):
     def __init__(self, path: str):
         super().__init__(path)
@@ -19,9 +18,15 @@ class PcapDataset(Dataset):
             raise ValueError("[!] Invalid path")
         
     def activate_dataset(self):
+        """
+        When the dataset is active, data is loaded into memory
+        """
         self.status = True
         self.open_dataset()        
 
     def open_dataset(self):
+        """
+        Load the pcap dataset into memory
+        """
         self.status = True
         self.data = open(self.path_dataset, 'rb')

@@ -19,12 +19,14 @@ class Dataset:
         self.extension_dataset = None
         self.status = False
 
-    # Hash the files as the dataset id (dsid)
-    # 
-    # Parameter :
-    #   path : path to your dataset
-    #
-    def hash_dataset(self, path: str) -> str:
+    @staticmethod
+    def hash_dataset(path: str) -> str:
+        """
+        Hash the files as the dataset id (dsid)
+
+        Parameter:
+            path: path to your dataset
+        """
         sha256_hash = hashlib.sha256()
         with open(path, "rb") as f:
             for byte_block in iter(lambda: f.read(4096), b""):
@@ -32,15 +34,19 @@ class Dataset:
         
         return sha256_hash.hexdigest()
     
-    # Compare the hash of two datasets
-    #
-    # Return :
-    #   boolean : true or false
     def compare_dataset(self, dataset: object) -> bool:
+        """
+        Compare the hash of two datasets
+
+        Return:
+            boolean: true or false
+        """
         return self.dsid == dataset.dsid
 
-    # Free the memory
     def stop_dataset(self):
+        """
+        Free the memory
+        """
         self.status = False
         self.data = None
 

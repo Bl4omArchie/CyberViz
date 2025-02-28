@@ -17,8 +17,8 @@ class Hdf5Dataset(Dataset):
         if not self.path_dataset.is_file():
             raise ValueError("[!] Invalid path")
     
-    
-    # Load the hdf5 dataset into memory
-    #
     def open_dataset(self):
+        """
+        Load the hdf5 dataset into memory
+        """
         self.data = dd.read_hdf(self.path_dataset, 'r')

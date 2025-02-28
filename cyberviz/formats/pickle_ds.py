@@ -20,17 +20,17 @@ class PickleDataset(Dataset):
         if not self.path_dataset.is_file():
             raise ValueError("[!] Invalid path")
 
-
-    # When the dataset is active, data is loaded into memory
-    #
     def activate_dataset(self):
+        """
+        When the dataset is active, data is loaded into memory
+        """
         self.status = True
         self.open_dataset()
         
-    
-    # Load the pickle dataset into memory
-    #
     def open_dataset(self):
+        """
+        Load the pickle dataset into memory
+        """
         dbfile = open(self.path_dataset, 'rb')
         self.data = pickle.load(dbfile)
         self.status = True
