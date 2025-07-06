@@ -1,59 +1,72 @@
-from cyberviz.convert.export import export_to_parquet
-from cyberviz.formats.csv_ds import CsvDataset
-from cyberviz.formats.pcap_ds import PcapDataset
-from cyberviz.formats.hdf5_ds import Hdf5Dataset
-from cyberviz.formats.parquet_ds import ParquetDataset
-from cyberviz.formats.pickle_ds import PickleDataset
-from cyberviz.dataset import Dataset
+from cyberviz.format import *
 
 import dask.dataframe as dd
+from pathlib import Path
+import hashlib
 import random
 import os
+
 
 
 # Main interface
 class Cyberviz:
     """
     Cyberviz is a class that takes datasets and performs operations like compression, statistics, and more.
-    Currently, only CSV, PCAP, HD5 and Parquet files are accepted.
+    Currently, only CSV, PCAP and Parquet files are accepted.
     """
-    
-    def __init__(self):        
+    def __init__(self, datasets: dict):        
         # Dictionary to store loaded datasets with their unique IDs.
         # Usage: {id1: data_object1, id2: data_object2, ...}
-        self.datasets = {}
-        
-        # Set of unique ids
+        self.datasets = datasets
         self.ids = set()
-      
+    
         
-    # Add a dataset to the datasets dictionary
-    # Parameter :
-    #   path: path to the dataset emplacement
-    #
-    # Return :
-    #   dsid: the unique id of the dataset
-    def add_dataset(self, path: str) -> str:
-        if not os.path.exists(path):
-            raise FileNotFoundError(f"[!] The path {path} does not exist")
+    @classmethod
+    def upload_folder(cls, path: str) -> list[Dataset]:
+        folder_path = Path(path)
+        if not folder_path.is_dir():
+            raise ValueError(f"[!] Path {path} is not a valid directory.")
 
-        if path.endswith(".csv"): 
-            obj = CsvDataset(path)
+        datasets = {}
+        for file in folder_path.glob("*"):
+            if file.suffix in [".csv", ".pcap", ".parquet", ".pq", ".parq"]:
+                try:
+                    data = create_dataset(str(file))
+                    datasets[data.dhash] = data
+                except Exception as e:
+                    print(f"[!] Skipping {file}: {e}")
+
+        return cls(datasets)
+
+
+    def update_file(self, path: str) -> Dataset:
+        if not os.path.isfile(path):
+            raise FileNotFoundError(f"[!] File {path} does not exist.")
+
+        updated_dataset = create_dataset(path)
+
+        return updated_dataset
+
+
+    def add_dataset(self, path: str) -> str:
+        file_path = Path(path)
+        if not file_path.is_file():
+            raise ValueError(f"[!] Path {path} is not a valid file.")
+
+        if file_path.suffix(".csv"): 
+            csv = CsvFormat()
+            csv.update_file(path)
         
-        elif path.endswith(".pcap"): 
-            obj = PcapDataset(path)
+        elif file_path.suffix(".pcap"): 
+            pcap = PcapFormat()
+            pcap.update_file(path)
             
-        elif path.endswith((".parquet", ".pq", ".parq")): 
-            obj = ParquetDataset(path)
-        
-        elif path.endswith(".h5"):
-            obj = Hdf5Dataset(path)
-            
-        elif path.endswith(".pickle"):
-            obj = PickleDataset(path)
+        elif file_path.suffix(".parquet", ".pq", ".parq"): 
+            parquet = ParquetFormat()
+            parquet.update_file(path)
             
         else:
-            raise ValueError("[!] Invalid dataset format. Accepted formats: CSV, PCAP, Parquet, HDF5") 
+            raise ValueError("[!] Invalid dataset format. Accepted formats: CSV, PCAP, Parquet") 
 
         if obj.dsid in self.ids:
             raise ValueError("[!] This dataset has already been loaded")
@@ -72,12 +85,12 @@ class Cyberviz:
     def remove_dataset(self, dsid: str):
         if dsid not in self.ids:
             raise ValueError("Dataset not found")
-        
-        self.all_ids.remove(dsid)
-        del self.datasets[dsids]
+
+        self.ids.remove(dsid)
+        del self.datasets[dsid]
 
 
-    # Load one or several datasets into RAM. 
+    # Load one or several datasets. 
     #
     # Parameter :
     #   list_dsid : ids of dataset you want to merge
@@ -134,10 +147,6 @@ class Cyberviz:
             print(f"[!] Failed to export dataset to parquet: {e}")
 
 
-    def get_dataset(self, dsid: str):
-        return self.datasets.get(dsid)
-
-
     # Get the hash of the dataset
     # Parameter :   
     #   dsid: dataset id
@@ -157,9 +166,14 @@ class Cyberviz:
     # A json file keep track of each file to get them back to their original format
     # The purpose of the datalake is to store efficiently data for other purpose like data visualization or AI 
     #
-    def create_datalake(self):
-        for key, val in self.datasets.items():
-            print(key, val)
+    def create_datalake(self, folder="datalake/"):
+        os.makedirs(folder, exist_ok=True)
+        for dsid, dataset in self.datasets.items():
+            path = os.path.join(folder, f"{dsid}.parquet")
+            try:
+                dataset.export_to_parquet(path)
+            except Exception as e:
+                print(f"[!] Failed to export {dsid}: {e}")
 
 
     # Make basic analysis of the dataset
@@ -171,3 +185,7 @@ class Cyberviz:
         if self.datasets.get(dsid).status == False:
             raise ValueError("[!] Inactive dataset, please active it first")
         self.datasets.get(dsid).basics_data()
+
+
+    def get_dataset(self, dsid: str):
+        return self.datasets.get(dsid)

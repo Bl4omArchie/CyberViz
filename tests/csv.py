@@ -119,3 +119,27 @@ class CsvDataset(Dataset):
         # Count the number of 'Label' values that are True
         true_label_count = self.data[self.data['Label'] == True].shape[0].compute()
         print(true_label_count)
+
+    def analyze_csv(self):        
+        columns = self.data.columns.tolist()
+        file_size = self.data.memory_usage(deep=True).sum()
+        num_rows, num_columns = self.data.shape
+        
+        stats = self.data.describe(include='all').to_dict()
+        missing_values = self.data.isnull().sum().to_dict()
+        
+        return {
+            'file_size': file_size,
+            'num_rows': num_rows,
+            'num_columns': num_columns,
+        }
+
+    # Convert a file to parquet format
+    # Parameter :
+    #   export_path: folder where your file will be converted
+    #
+    def export_to_parquet(self, export_path: str):
+        export_dir = Path(export_path)
+        export_dir.mkdir(parents=True, exist_ok=True)
+        self.data.to_parquet(export_dir / file.stem, engine="pyarrow")
+

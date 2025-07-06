@@ -5,6 +5,9 @@ import os
 import re
 
 
+levenshtein_ratio_min = 0.8
+lexicon_path = "cyberviz/interpreter/lexicon.json"
+
 
 # The tokenize is a class to correct and tokenize headers
 # A lexicon is a set of synonym or abbreviation where one word is picked to represent all of them

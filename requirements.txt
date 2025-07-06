@@ -5,3 +5,5 @@ seaborn
 pickledb
 scikit-learn
 Levenshtein
+streamlit
+streamlit-modal
