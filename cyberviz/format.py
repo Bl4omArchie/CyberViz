@@ -22,10 +22,9 @@ class Dataset:
     extension: str
     size: float
     data: bytes
-    status: bool
 
 
-def create_dataset(path: str, status: bool=False) -> Dataset:
+def create_dataset(path: str) -> Dataset:
     path = Path(path)
     if not path.is_file():
         raise ValueError("[!] Invalid path")
@@ -35,7 +34,7 @@ def create_dataset(path: str, status: bool=False) -> Dataset:
     ext = path.suffix
     size = path.stat().st_size / 1024 / 1024
 
-    return Dataset(name=name, path=path, dhash=dhash, extension=ext, data=b"", status=status)
+    return Dataset(name=name, path=path, dhash=dhash, extension=ext, data=b"")
 
 
 def compute_hash(path: str) -> str:
@@ -48,7 +47,7 @@ def compute_hash(path: str) -> str:
 
 
 class CsvFormat:
-    def __init__(self, csv_files: list = None):
+    def __init__(self, dataset: Dataset):
         self.parameters = {
             "sep": None,
             "blocksize": None,
@@ -61,7 +60,7 @@ class CsvFormat:
             "extra_parameters": None
         }
 
-        self.files = csv_files
+        self.dataset = dataset
 
     def export_to_parquet(self, export_path: str):
         export_dir = Path(export_path)

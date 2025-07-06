@@ -14,11 +14,11 @@ class Cyberviz:
     Cyberviz is a class that takes datasets and performs operations like compression, statistics, and more.
     Currently, only CSV, PCAP and Parquet files are accepted.
     """
-    def __init__(self, datasets: dict):        
+    def __init__(self, datasets: dict=None):        
         # Dictionary to store loaded datasets with their unique IDs.
-        # Usage: {id1: data_object1, id2: data_object2, ...}
+        # Usage: {hash1: Dataset1, hash2: Dataset2, ...}
         self.datasets = datasets
-        self.ids = set()
+        self.activated_dataset = None
     
         
     @classmethod
@@ -36,75 +36,58 @@ class Cyberviz:
                 except Exception as e:
                     print(f"[!] Skipping {file}: {e}")
 
+            else:
+                print(f"[!] Skipping {file}. Incorrect format : {e}")
+
         return cls(datasets)
 
 
-    def update_file(self, path: str) -> Dataset:
-        if not os.path.isfile(path):
-            raise FileNotFoundError(f"[!] File {path} does not exist.")
-
-        updated_dataset = create_dataset(path)
-
-        return updated_dataset
-
-
-    def add_dataset(self, path: str) -> str:
+    @classmethod
+    def update_file(cls, path: str) -> Dataset:
         file_path = Path(path)
         if not file_path.is_file():
             raise ValueError(f"[!] Path {path} is not a valid file.")
 
-        if file_path.suffix(".csv"): 
-            csv = CsvFormat()
-            csv.update_file(path)
+        if file_path.suffix in [".csv", ".pcap", ".parquet", ".pq", ".parq"]:
+            data = create_dataset(str(file_path))
+
+        return cls(datasets={data.hash: data})
+
+
+    def activate(self, dhash_list: list, **kwargs):
+        for dhash in dhash_list:
+            self.activate_single(dhash)
+
+
+    def activate_single(self, dhash: str, **kwargs):
+        data = self.datasets.get(dhash)
+
+        if data == None:
+            raise ValueError("Incorrect dataset hash")
         
-        elif file_path.suffix(".pcap"): 
-            pcap = PcapFormat()
-            pcap.update_file(path)
-            
-        elif file_path.suffix(".parquet", ".pq", ".parq"): 
-            parquet = ParquetFormat()
-            parquet.update_file(path)
-            
+        if data.extension == "csv": 
+            self.activate_dataset[data.hash] = CsvFormat(data)
+        
+        elif data.extension == "pcap": 
+            self.activate_dataset[data.hash] = PcapFormat(data)
+
+        elif data.extension in ["pq", "parquet", "parq"]: 
+            self.activate_dataset[data.hash] = ParquetFormat(data)
+
         else:
-            raise ValueError("[!] Invalid dataset format. Accepted formats: CSV, PCAP, Parquet") 
-
-        if obj.dsid in self.ids:
-            raise ValueError("[!] This dataset has already been loaded")
-        
-        self.ids.add(obj.dsid)
-        self.datasets[obj.dsid] = obj
-        
-        return obj.dsid
+            raise ValueError("Not supported dataset type.")
 
 
-    # Remove a dataset
-    #
-    # Parameters :
-    #   dsid : dataset id
-    #
-    def remove_dataset(self, dsid: str):
-        if dsid not in self.ids:
-            raise ValueError("Dataset not found")
-
-        self.ids.remove(dsid)
-        del self.datasets[dsid]
+    def deactivate(self, dhash_list: list):
+        for dhash in dhash_list:
+            self.deactivate_single(dhash)
 
 
-    # Load one or several datasets. 
-    #
-    # Parameter :
-    #   list_dsid : ids of dataset you want to merge
-    #
-    # Return :
-    #   boolean value depending on the success of the activation
-    #
-    def activate_dataset(self, list_dsid: list, **kwargs) -> bool:
-        # TODO : handle memory overflow
-        for dsid in list_dsid:
-            if dsid not in self.ids:
-                raise ValueError("Dataset not found")
+    def deactivate_single(dhash: str):
+        if self.datasets.get(dhash) == None:
+            raise ValueError("Incorrect dataset hash")
 
-            self.datasets[dsid].activate_dataset(**kwargs)
+        del self.activate_dataset[dhash]
 
 
     # Create a new dataset based from several ones. The idea is to have a generic interface that works whatever
@@ -174,17 +157,6 @@ class Cyberviz:
                 dataset.export_to_parquet(path)
             except Exception as e:
                 print(f"[!] Failed to export {dsid}: {e}")
-
-
-    # Make basic analysis of the dataset
-    #
-    # Parameter :
-    #   dsid: dataset id
-    # 
-    def analyze(self, dsid: str):
-        if self.datasets.get(dsid).status == False:
-            raise ValueError("[!] Inactive dataset, please active it first")
-        self.datasets.get(dsid).basics_data()
 
 
     def get_dataset(self, dsid: str):
