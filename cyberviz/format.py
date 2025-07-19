@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+import hashlib
 import json
 import os
 
@@ -34,7 +35,7 @@ def create_dataset(path: str) -> Dataset:
     ext = path.suffix
     size = path.stat().st_size / 1024 / 1024
 
-    return Dataset(name=name, path=path, dhash=dhash, extension=ext, data=b"")
+    return Dataset(name=name, path=path, dhash=dhash, extension=ext, size=size, data=b"")
 
 
 def compute_hash(path: str) -> str:
@@ -61,6 +62,7 @@ class CsvFormat:
         }
 
         self.dataset = dataset
+
 
     def export_to_parquet(self, export_path: str):
         export_dir = Path(export_path)

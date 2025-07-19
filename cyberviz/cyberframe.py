@@ -17,10 +17,13 @@ class Cyberviz:
     def __init__(self, datasets: dict=None):        
         # Dictionary to store loaded datasets with their unique IDs.
         # Usage: {hash1: Dataset1, hash2: Dataset2, ...}
-        self.datasets = datasets
+        if datasets == None:
+            self.datasets = {}
+        else:
+            self.datasets = datasets
         self.activated_dataset = None
     
-        
+
     @classmethod
     def upload_folder(cls, path: str) -> list[Dataset]:
         folder_path = Path(path)
@@ -39,11 +42,23 @@ class Cyberviz:
             else:
                 print(f"[!] Skipping {file}. Incorrect format : {e}")
 
-        return cls(datasets)
+        return cls(datasets=datasets)
 
 
     @classmethod
-    def update_file(cls, path: str) -> Dataset:
+    def update_file(cls, path: str) -> "Cyberviz":
+        file_path = Path(path)
+        if not file_path.is_file():
+            raise ValueError(f"[!] Path {path} is not a valid file.")
+
+        if file_path.suffix in [".csv", ".pcap", ".parquet", ".pq", ".parq"]:
+            data = create_dataset(str(file_path))
+        else:
+             raise ValueError(f"[!] File {path} is not in the valid format.")
+
+        return cls(datasets={data.dhash: data})
+
+    def add_dataset(self, path: str):
         file_path = Path(path)
         if not file_path.is_file():
             raise ValueError(f"[!] Path {path} is not a valid file.")
@@ -51,7 +66,7 @@ class Cyberviz:
         if file_path.suffix in [".csv", ".pcap", ".parquet", ".pq", ".parq"]:
             data = create_dataset(str(file_path))
 
-        return cls(datasets={data.hash: data})
+        self.datasets[data.dhash] = data
 
 
     def activate(self, dhash_list: list, **kwargs):
@@ -109,25 +124,6 @@ class Cyberviz:
                 continue
             
             self.datasets[dsid_to_merge].merge_headers(self.datasets[dsid])
-            
-
-    # Export a dataset to parquet format
-    #
-    #  Parameter :   
-    #   dsid: dataset id
-    #   export_path: folder where your file will be converted
-    #
-    def export_to_parquet(self, dsid: str, export_path: str):
-        data = self.datasets.get(dsid)
-        if data is None:
-            raise ValueError("[!] Dataset not found")
-        
-        try:
-            export_to_parquet(export_path)
-            self.add_dataset(export_path)
-            
-        except Exception as e:
-            print(f"[!] Failed to export dataset to parquet: {e}")
 
 
     # Get the hash of the dataset
@@ -142,21 +138,6 @@ class Cyberviz:
             raise ValueError("[!] Dataset not found")
         
         return data.hash_dataset
-
-    
-    # Take every loaded dataset and store them into a create_datalake
-    # A datalake is defined as a single folder where only parquet file are stored
-    # A json file keep track of each file to get them back to their original format
-    # The purpose of the datalake is to store efficiently data for other purpose like data visualization or AI 
-    #
-    def create_datalake(self, folder="datalake/"):
-        os.makedirs(folder, exist_ok=True)
-        for dsid, dataset in self.datasets.items():
-            path = os.path.join(folder, f"{dsid}.parquet")
-            try:
-                dataset.export_to_parquet(path)
-            except Exception as e:
-                print(f"[!] Failed to export {dsid}: {e}")
 
 
     def get_dataset(self, dsid: str):
