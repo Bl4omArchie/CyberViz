@@ -9,6 +9,30 @@ levenshtein_ratio_min = 0.8
 lexicon_path = "cyberviz/interpreter/lexicon.json"
 
 
+sample = {
+    "average": ["mean", "avg", "median"],
+    "total": ["sum", "tot", "total"],
+    "minimum": ["min", "minimum"],
+    "maximum": ["max", "maximum"],
+    "standard_deviation": ["std", "stdev", "standard deviation"],
+    "packet": ["pkt", "packets"],
+    "bytes_per_second": ["b/s", "bytes/sec", "bytes per second"],
+    "packets_per_second": ["p/s", "packets/sec", "packets per second"],
+    "flow": ["traffic", "stream", "connection"],
+    "forward": ["fwd", "forward"],
+    "backward": ["bwd", "backward"],
+    "flag": ["flg", "flag"],
+    "window_size": ["win_size", "window size"],
+    "segment": ["seg", "segment"],
+    "rate": ["ratio", "rate"],
+    "idle": ["inactivity", "idle"],
+    "active": ["activity", "active", "act"],
+    "header": ["hdr", "header"],
+    "length": ["len", "length"],
+    "duration": ["time", "duration"],
+    "category": ["class", "type", "traffic_category"]
+}
+
 # The tokenize is a class to correct and tokenize headers
 # A lexicon is a set of synonym or abbreviation where one word is picked to represent all of them
 #
