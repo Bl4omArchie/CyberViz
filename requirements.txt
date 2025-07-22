@@ -1,9 +1,5 @@
 dask
-pyarrow
-pandas
-seaborn
-pickledb
-scikit-learn
+scapy
 Levenshtein
 streamlit
 streamlit-modal
