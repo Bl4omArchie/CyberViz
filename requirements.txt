@@ -3,3 +3,8 @@ scapy
 Levenshtein
 streamlit
 streamlit-modal
+matplotlib
+squarify
+pandas
+seaborn
+plotly

@@ -3,62 +3,58 @@ from cyberviz.core import Cyberviz
 import streamlit as st
 
 
+@st.cache_resource
+def get_cyberviz() -> Cyberviz:
+    return Cyberviz()
+
+
+cyberviz = get_cyberviz()
+
 st.set_page_config(layout="wide")
-st.title("📊 CyberViz Dataset Manager")
+st.sidebar.title("📂 Upload Datasets")
 
+uploaded_files = st.sidebar.file_uploader("Upload files (max 2GB)", type=["csv", "pcap"], accept_multiple_files=True)
 
-if "cvz" not in st.session_state:
-    st.session_state["cvz"] = Cyberviz()
-cyberviz = st.session_state["cvz"]
+if uploaded_files:
+    for file in uploaded_files:
+        cyberviz.load_dataset(file)
 
+st.sidebar.markdown("---")
+st.sidebar.subheader("📄 Datasets")
 
-with st.sidebar:
-    st.header("📂 Upload Dataset")
-    uploaded_file = st.file_uploader("", type=["csv", "pcap", "parquet"])
+for hash, item in cyberviz.collection.index.items():
+    file_name = item.name
 
+    cols = st.sidebar.columns([6, 1])
+    with cols[0]:
+        if st.button(file_name, key=hash):
+            cyberviz.activate(hash)
+            st.session_state["active_hash"] = hash
 
-if uploaded_file:
-    if cyberviz.load_dataset(uploaded_file):
-        st.sidebar.success(f"✅ Dataset loaded with ID: {list(cyberviz.collection.index.keys())[-1]}")
-    else:
-        st.sidebar.error(f"✅ Dataset couldn't be loaded.")
+    with cols[1]:
+        if st.button("🗑️", key=f"delete_{hash}"):
+            cyberviz.delete(hash)
 
+            if st.session_state.get("active_hash") == hash:
+                del st.session_state["active_hash"]
 
-if cyberviz.collection.index:
-    st.subheader("📦 Datasets Loaded")
-    for dhash, dataset in list(cyberviz.collection.index.items()):
-        with st.container():
-            st.markdown("---")
-            col1, col2 = st.columns([3, 1])
+            st.rerun()
 
-            with col1:
-                st.markdown(f"#### 📄 {dataset.name}")
-                st.write(f"- **ID**: `{dhash}`")
-                st.write(f"- **Type**: `{dataset.extension}`")
-                st.write(f"- **Size**: {dataset.size:.2f} MB")
-                st.write(f"- **Path**: `{dataset.path}`")
+if "active_hash" in st.session_state:
+    active_hash = st.session_state["active_hash"]
+    preview_data = cyberviz.get_preview(active_hash)
+    dataset = cyberviz.collection.index[active_hash]
 
-            with col2:
-                preview_key = f"preview_{dhash}"
-                analyze_key = f"analyze_{dhash}"
-                remove_key = f"remove_{dhash}"
+    if preview_data is not None:
+        with st.expander(f"🔍 Preview of {dataset.name}", expanded=True):
+            st.dataframe(preview_data)
 
-                if st.button("👁️ Preview", key=preview_key):
-                    cyberviz.activate(dhash)
-                    st.session_state["preview_dataset"] = dhash
+    # Metadata display below preview
+    with st.expander(f"ℹ️ Metadata for {dataset.name}", expanded=True):
+        col1, col2 = st.columns(2)
 
-                if st.button("🧠 Analyze", key=analyze_key):
-                    st.error(f"❌ Not implemented yet")
-
-                if st.button("🗑️ Remove", key=remove_key):
-                    try:
-                        cyberviz.delete(dhash)
-                        if st.session_state.get("preview_dataset") == dhash:
-                            del st.session_state["preview_dataset"]
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"❌ Error removing dataset: {e}")
-
-
-else:
-    st.info("No datasets loaded yet.")
+        with col1:
+            st.markdown(f"**📛 Name:** `{dataset.name}`")
+            st.markdown(f"**🔢 Hash:** `{active_hash}`")
+            st.markdown(f"**🗃️ Extension:** `{dataset.extension}`")
+            st.markdown(f"**📦 Size:** `{dataset.size} MB`")

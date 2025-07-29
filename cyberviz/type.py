@@ -1,3 +1,4 @@
+from json import load
 from cyberviz.dataset import Dataset
 
 from abc import ABC, abstractmethod
@@ -17,11 +18,6 @@ class BaseDataset(ABC):
         self.content = None
     
     @abstractmethod
-    def load(self):
-        """Load the dataset into a memory-efficient structure (e.g. Dask DataFrame)"""
-        pass
-    
-    @abstractmethod
     def preview(self, n=5):
         """Return a preview (head) of the dataset"""
         pass
@@ -37,14 +33,11 @@ class CsvDataset(BaseDataset):
         super().__init__(dataset)
         if dataset.extension != "csv":
             raise ValueError(f"Incorrect type. You can't load a {dataset.extension} file into a CsvDataset.")
-
-    def load(self):
+        
         self.content = load_cache_csv(self.dataset.path)
 
     def preview(self, n=5):
-        if self.df is None:
-            self.load()
-        return self.df.head(n)
+        return self.content.head(n)
 
     def metadata(self):
         if self.df is None:
@@ -63,5 +56,4 @@ class PcapDataset(BaseDataset):
         if dataset.extension != ".pcap":
             raise ValueError(f"Incorrect type. You can't load a {dataset.extension} file into a PcapDataset.")
 
-    def load(self):
         self.content = rdpcap(self.dataset.path)

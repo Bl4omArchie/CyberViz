@@ -1,8 +1,9 @@
-import logging
 from cyberviz.dataset import Dataset, CollectionDataset
 from cyberviz.type import CsvDataset, PcapDataset
 
 from streamlit.runtime.uploaded_file_manager import UploadedFile
+
+import logging
 
 
 class Cyberviz:
@@ -39,8 +40,6 @@ class Cyberviz:
         else:
             raise ValueError(f"Unsupported file type: {ext}")
 
-        self.collection.index[hash].content.load()
-
 
     def activate_all(self):
         for file_hash, _ in self.collection.index.keys():
@@ -49,13 +48,27 @@ class Cyberviz:
 
     def get_preview(self, hash: str):
         data = self.collection.index.get(hash)
+        print(data)
         if data is not None:
             if data.content is not None:
-                data.content.preview()
+                return data.content.preview()
             else:
                 logging.warning(f"Dataset : {hash} must be activated first")
         else:
             logging.warning(f"Couldn't get dataset : {hash}")
+
+
+    def get_metadata(self, hash: str):
+        data = self.collection.index.get(hash)
+        print(data)
+        if data is not None:
+            if data.content is not None:
+                return data.content.metadata()
+            else:
+                logging.warning(f"Dataset : {hash} must be activated first")
+        else:
+            logging.warning(f"Couldn't get dataset : {hash}")
+
 
     def delete(self, hash: str):
         self.collection.delete_item(hash)
