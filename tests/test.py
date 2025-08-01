@@ -1,4 +1,4 @@
-import cyberviz.cyberframe as mf
+import cyberviz.core as mf
 from tests.test_tokenizer import *
 
 

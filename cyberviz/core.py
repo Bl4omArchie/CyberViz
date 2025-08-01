@@ -1,6 +1,4 @@
-from cyberviz.dataset import Dataset, CollectionDataset
-from cyberviz.type import CsvDataset, PcapDataset
-
+from cyberviz.dataset import CsvDataset, PcapDataset, CollectionDataset
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 import logging
@@ -9,23 +7,40 @@ import logging
 class Cyberviz:
     def __init__(self):
         self.collection = CollectionDataset.new_collection()
-
+        self.base_cls = {
+            "csv": CsvDataset,
+            "pcap": PcapDataset
+        }
 
     def add_dataset(self, path: str) -> bool:
-        dataset = Dataset.new_dataset(path)
-        if dataset is not None:
+        extension = path.split('.')[-1].lower()
+        base = self.base_cls.get(extension)
+
+        if base is None:
+            logging.warning(f"Unsupported file extension: {extension}")
+            return False
+
+        dataset = base.new_dataset(path)
+        if dataset:
             self.collection.add_item(dataset)
             return True
-        
+
         return False
 
 
     def load_dataset(self, data: UploadedFile) -> bool:
-        dataset = Dataset.upload_dataset(data)
-        if dataset is not None:
+        extension = data.name.split('.')[-1].lower()
+        base = self.base_cls.get(extension)
+
+        if base is None:
+            logging.warning(f"Unsupported file extension: {extension}")
+            return False
+
+        dataset = base.upload_dataset(data)
+        if dataset:
             self.collection.add_item(dataset)
             return True
-        
+
         return False
 
 
@@ -47,27 +62,17 @@ class Cyberviz:
 
 
     def get_preview(self, hash: str):
-        data = self.collection.index.get(hash)
-        print(data)
-        if data is not None:
-            if data.content is not None:
-                return data.content.preview()
-            else:
-                logging.warning(f"Dataset : {hash} must be activated first")
-        else:
-            logging.warning(f"Couldn't get dataset : {hash}")
+        dataset = self.collection.index.get(hash)
+        if dataset:
+            return dataset.preview()
+        logging.warning(f"Dataset : {hash} must be loaded first")
 
 
     def get_metadata(self, hash: str):
-        data = self.collection.index.get(hash)
-        print(data)
-        if data is not None:
-            if data.content is not None:
-                return data.content.metadata()
-            else:
-                logging.warning(f"Dataset : {hash} must be activated first")
-        else:
-            logging.warning(f"Couldn't get dataset : {hash}")
+        dataset = self.collection.index.get(hash)
+        if dataset:
+            return dataset.metadata()
+        logging.warning(f"Dataset : {hash} must be loaded first")
 
 
     def delete(self, hash: str):
