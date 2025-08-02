@@ -25,7 +25,17 @@ Todo :
 - define PCAP type
 - more type checking and tests
 
+# Sources 
+
+A csv dataset called Hikari :
+![hikari](preview1.png)
+
+Pie chart of the header 'traffic category' :
+![pie chart](preview2.png)
+
+
+
 
 # Sources (update 2025) :
 - IoT-23 : https://www.stratosphereips.org/blog/2020/1/22/aposemat-iot-23-a-labeled-dataset-with-malicious-and-benign-iot-network-traffic
-- Hiraki 2021 : https://zenodo.org/records/5199540
+- Hikari 2021 : https://zenodo.org/records/5199540
