@@ -46,6 +46,7 @@ class Cyberviz:
 
     def activate(self, hash: str):
         ext = self.collection.index.get(hash).extension
+        print(ext)
         if ext == "csv":
             self.collection.index[hash].content = CsvDataset(self.collection.index.get(hash))
         

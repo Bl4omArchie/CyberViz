@@ -12,4 +12,4 @@ WORKDIR /app
 
 EXPOSE 8501
 
-CMD ["streamlit", "run", "app.py", "--server.enableCORS=false", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "app.py", "--server.maxUploadSize=2000", "--server.enableCORS=false", "--server.address=0.0.0.0"]
