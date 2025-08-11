@@ -1,6 +1,7 @@
-from cyberviz.graphic import TreemapGraphic, Graphic
+from cyberviz.graphic import new_graph
 from cyberviz.core import Cyberviz
 import streamlit as st
+
 
 @st.cache_resource
 def get_cyberviz() -> Cyberviz:
@@ -10,12 +11,9 @@ def get_cyberviz() -> Cyberviz:
 # Start Cyberviz framework
 cyberviz = get_cyberviz()
 
-
-# Set main page
 st.set_page_config(layout="wide")
 st.title("📊 Cyberviz Dashboard")
 
-# Build Tabs
 tabs = []
 hash_to_name = {}
 
@@ -27,7 +25,7 @@ for hash, item in cyberviz.collection.index.items():
 tabs.append("➕ Upload")
 selected_tab = st.tabs(tabs)
 
-# Display content depending on selected tab
+
 for i, tab in enumerate(selected_tab):
     with tab:
         tab_name = tabs[i]
@@ -41,12 +39,14 @@ for i, tab in enumerate(selected_tab):
             if 'uploaded_files' not in st.session_state:
                 st.session_state.uploaded_files = set()
 
-            new_files = [f for f in uploaded_files if f.name not in st.session_state.uploaded_files]
+            new_datasets = [f for f in uploaded_files if f.name not in st.session_state.uploaded_files]
 
-            if new_files:
-                for file in new_files:
-                    cyberviz.load_dataset(file)
-                    st.session_state.uploaded_files.add(file.name)
+            if new_datasets:
+                for dataset in new_datasets:
+                    cyberviz.load_dataset(dataset)
+                    st.session_state.uploaded_files.add(dataset.name)
+                    new_datasets = []
+
                 st.success("✅ Uploaded successfully.")
                 st.rerun()
 
@@ -74,44 +74,29 @@ for i, tab in enumerate(selected_tab):
                     st.markdown(f"**🗃️ Extension:** `{dataset.extension}`")
                     st.markdown(f"**📦 Size:** `{dataset.size} MB`")
 
-            # === Preview ===
             if preview_data is not None:
                 with st.expander(f"🔍 Preview of {dataset.name}", expanded=True):
                     st.dataframe(preview_data)
 
-                with st.expander(f"📊 Treemap Plot", expanded=True):
-                    count = dataset.category("traffic_category").value_counts()
-                    count_pd = count.compute()
-                    total = count_pd.sum()
-                    percent = count_pd / total
+                with st.expander("📈 Visualize Column Data", expanded=True):
+                    col_names = dataset.content.columns
 
-                    major_mask = percent >= 0.04
-                    major_labels = count_pd[major_mask]
-                    minor_labels = count_pd[~major_mask]
+                    chart_type = st.radio("Choose a chart type", ["Treemap", "Pie Chart", "Histogram"], horizontal=True)
+                    selected_col = st.selectbox("Select column to visualize", col_names)
 
-                    final_labels = []
-                    final_sizes = []
+                    if selected_col:
+                        series = dataset.category(selected_col)
+                        value_counts = series.value_counts().compute()
+                        labels = [f"{idx} ({val})" for idx, val in value_counts.items()]
+                        values = value_counts.tolist()
+                        
+                        obj = new_graph(
+                            graph_type=chart_type,
+                            title=f"{chart_type} of {selected_col}",
+                            legend=f"Distribution of {selected_col}",
+                            inputs=values,
+                            labels=labels
+                        )
 
-                    for label, size in major_labels.items():
-                        pct = size / total
-                        final_labels.append(f"{label}\n{size} ({pct:.1%})")
-                        final_sizes.append(size)
-
-                    if not minor_labels.empty:
-                        grouped_name = ', '.join(minor_labels.index.tolist())
-                        grouped_label = f"Others\n({grouped_name})"
-                        grouped_size = minor_labels.sum()
-                        grouped_pct = grouped_size / total
-                        grouped_label += f"\n{grouped_size} ({grouped_pct:.1%})"
-                        final_labels.append(grouped_label)
-                        final_sizes.append(grouped_size)
-
-                    graph = Graphic.new_plot(
-                        title="Traffic categories",
-                        legend="Different traffic categories",
-                        inputs=final_sizes,
-                        labels=final_labels
-                    )
-
-                    obj = TreemapGraphic()
-                    obj.plot_graph(graph)
+                        if obj:
+                            obj.plot_graph()

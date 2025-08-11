@@ -13,17 +13,20 @@ Features :
 
 
 
-# TODO 
+# Goals
 
-Done :
-- define a dataset and a dataset collection
-- create the main class for dataset collection management (Cyberviz)
-- define CSV type for load(), preview() and metadata()
+v0 to v1 :
+- streamlit dashboard :
+    - drag and drop ✅
+    - page for dataset ✅
+    - dataset manipulation 🚧
+- cyberviz framework for csv and pcap ✅
+- dataset analytic 🚧
 
-Todo :
-- add more methods for data viz on CSV dataset
-- define PCAP type
-- more type checking and tests
+TODO :
+- Fix graphical bugs for pages
+- Improve dashboard for dataset manipulation
+
 
 # Sources 
 

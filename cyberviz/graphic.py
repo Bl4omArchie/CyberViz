@@ -1,6 +1,6 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Optional, Tuple, List
+from abc import ABC, abstractmethod
+
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -8,46 +8,66 @@ import streamlit as st
 import squarify
 
 
-@dataclass
-class Graphic:
-    title: str
-    legend: str
-    inputs: List[float] = None
-    labels: List[str] = None
-    fig_size: Optional[Tuple[int, int]] = (18, 12)
-    grid: Optional[bool] = False
-    save: Optional[bool] = False
-
-    @staticmethod
-    def new_plot(title: str,legend: str, inputs, labels: List[str], fig_size: Optional[Tuple[int, int]] = (18, 12), grid: Optional[bool] = False, save: Optional[bool] = False):
-        return Graphic(title=title, legend=legend, inputs=inputs, labels=labels, fig_size=fig_size, grid=grid, save=save)
-
-
 class BaseGraphic(ABC):
-    def __init__(self):
-        pass
+    def __init__(self, title: str,legend: str, inputs, labels: List[str],
+                 fig_size: Optional[Tuple[int, int]] = (18, 12),
+                 grid: Optional[bool] = False, save: Optional[bool] = False):
+
+        self.title = title
+        self.legend = legend
+        self.inputs = inputs
+        self.labels = labels
+        self.fig_size = fig_size
+        self.grid = grid
+        self.save = save
 
     @abstractmethod
-    def plot_graph(input: str):
+    def plot_graph(self):
         pass
 
-class TreemapGraphic:
-    def __init__(self):
-        super().__init__()
-        self.family = "chart"
-        self.functions = ["comparison", "distribution"]
-        self.shape = "square"
 
-
-    def plot_graph(self, graph: Graphic):
-        sizes = graph.inputs
+class TreemapGraphic(BaseGraphic):
+    def plot_graph(self):
+        sizes = self.inputs
+        labels = self.labels
         colors = sns.color_palette("pastel", len(sizes))
 
-        fig, ax = plt.subplots(figsize=graph.fig_size)
+        fig, ax = plt.subplots(figsize=self.fig_size)
+
+        squarify.plot(
+            sizes=sizes,
+            label=labels,
+            color=colors,
+            alpha=0.8,
+            ax=ax,
+            pad=True
+        )
+
+        ax.axis('off')
+        ax.set_title(self.title, loc='left')
+
+        if self.legend is not None:
+            ax.legend(title=self.legend, bbox_to_anchor=(1.05, 1), loc='upper left')
+
+        if self.grid:
+            ax.grid()
+
+        if self.save:
+            fig.savefig(f"{self.title.replace(' ', '_')}.png", bbox_inches="tight")
+        else:
+            st.pyplot(fig)
+
+
+class PieChartGraphic(BaseGraphic):
+    def plot_graph(self):
+        sizes = self.inputs
+        colors = sns.color_palette("pastel", len(sizes))
+
+        fig, ax = plt.subplots(figsize=self.fig_size)
 
         ax.pie(
             sizes,
-            labels=graph.labels,
+            labels=self.labels,
             colors=colors,
             autopct='%1.1f%%',
             startangle=90,
@@ -55,39 +75,49 @@ class TreemapGraphic:
         )
 
         ax.axis('equal')
-        ax.set_title(graph.title, loc='left')
+        ax.set_title(self.title, loc='left')
 
-        if graph.legend is not None:
-            ax.legend(title=graph.legend, bbox_to_anchor=(1.05, 1), loc='upper left')
+        if self.legend:
+            ax.legend(title=self.legend, bbox_to_anchor=(1.05, 1), loc='upper left')
 
-        if graph.grid:
+        if self.grid:
             ax.grid()
 
-        if graph.save:
-            fig.savefig(f"{graph.title.replace(' ', '_')}.png", bbox_inches="tight")
+        if self.save:
+            fig.savefig(f"{self.title.replace(' ', '_')}.png", bbox_inches="tight")
         else:
             st.pyplot(fig)
 
-"""
-class HistGraphic:
-    def __init__(self):
-        super().__init__()
-        self.family = "chart"
-        self.functions = ["distribution"]
-        self.shape = "bar"
 
-    def plot_graph(self, graph: Graphic):
-        plt.figure(graph.fig_size)
+class HistogramGraphic(BaseGraphic):
+    def plot_graph(self):
+        fig, ax = plt.subplots(figsize=self.fig_size)
+        sns.histplot(self.inputs, bins=20, ax=ax, kde=False, color='skyblue')
 
-        sns.histplot(data=graph.input, x=graph.x_header[0], y=graph.y_header[0], hue='Label', palette={graph.x_header[0]: graph.x_header[1], graph.y_header[0]: graph.y_header[1]}, alpha=0.6)
+        ax.set_title(self.title)
+        ax.set_xlabel(self.legend)
 
-        plt.title(graph.title ,fontsize=16)
-        plt.xlabel(graph.x_label, fontsize=12)
-        plt.ylabel(graph.y_label, fontsize=12)
-        plt.legend(title=graph.legend, bbox_to_anchor=(1.05, 1), loc='upper left')
-        plt.tight_layout()
-        plt.show()
+        if self.grid:
+            ax.grid()
 
-        if graph.path:
-            plt.savefig()
-"""
+        if self.save:
+            fig.savefig(f"{self.title.replace(' ', '_')}.png", bbox_inches="tight")
+        else:
+            st.pyplot(fig)
+
+
+CHART_CLASSES = {
+    "Treemap": TreemapGraphic,
+    "Pie Chart": PieChartGraphic,
+    "Histogram": HistogramGraphic
+}
+
+def new_graph(graph_type, title: str,legend: str, inputs, labels: List[str],
+                fig_size: Optional[Tuple[int, int]] = (18, 12),
+                grid: Optional[bool] = False, save: Optional[bool] = False):
+    
+    obj = CHART_CLASSES.get(graph_type)
+    if obj:
+        return obj(title=title, legend=legend, inputs=inputs, labels=labels, fig_size=fig_size, grid=grid, save=save)
+    else:
+        raise ValueError(f"Graph type {graph_type} is not supported")

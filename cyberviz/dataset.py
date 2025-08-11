@@ -110,7 +110,7 @@ class CsvDataset(BaseDataset):
 
 class PcapDataset(BaseDataset):
     def __init__(self, name: str, path: str, size: float, extension: str, dhash: str):
-        if extension != "csv":
+        if extension != "pcap":
             raise ValueError(f"Incorrect type. You can't load a {extension} file into a PcapDataset.")
         
         super().__init__(name, path, size, extension, dhash)
